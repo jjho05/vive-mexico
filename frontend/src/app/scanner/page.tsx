@@ -7,11 +7,17 @@ export default function ScannerPage() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
   const handlePickPhoto = () => {
     setError(null);
-    fileInputRef.current?.click();
+    cameraInputRef.current?.click();
+  };
+
+  const handlePickUpload = () => {
+    setError(null);
+    uploadInputRef.current?.click();
   };
 
   const handleScan = async (file: File) => {
@@ -49,15 +55,23 @@ export default function ScannerPage() {
 
       <div className="relative aspect-square w-full bg-black rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center border-4 border-white">
         {!scanning && !result && (
-          <button 
-            onClick={handlePickPhoto}
-            className="flex flex-col items-center gap-4 text-white"
-          >
-            <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/50">
-              <Camera size={40} />
-            </div>
-            <span className="font-bold text-lg">Tomar Foto del Menú</span>
-          </button>
+          <div className="flex flex-col items-center gap-4 text-white">
+            <button 
+              onClick={handlePickPhoto}
+              className="flex flex-col items-center gap-4"
+            >
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/50">
+                <Camera size={40} />
+              </div>
+              <span className="font-bold text-lg">Tomar Foto del Menú</span>
+            </button>
+            <button
+              onClick={handlePickUpload}
+              className="text-sm font-semibold text-white/90 underline underline-offset-4"
+            >
+              Subir imagen desde tu dispositivo
+            </button>
+          </div>
         )}
 
         {scanning && (
@@ -123,10 +137,22 @@ export default function ScannerPage() {
       )}
 
       <input
-        ref={fileInputRef}
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleScan(file);
+          }
+        }}
+      />
+      <input
+        ref={uploadInputRef}
+        type="file"
+        accept="image/*"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
