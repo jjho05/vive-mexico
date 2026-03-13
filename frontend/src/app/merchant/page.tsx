@@ -35,6 +35,12 @@ export default function MerchantDashboard() {
   }, []);
 
   React.useEffect(() => {
+    if (merchantId) {
+      localStorage.setItem('ola-mexico-role', 'merchant');
+    }
+  }, [merchantId]);
+
+  React.useEffect(() => {
     if (!address) {
       setSuggestions([]);
       return;

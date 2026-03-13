@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { User, Settings, Globe, CreditCard, LogOut, Languages } from 'lucide-react';
+import { User, Settings, Globe, CreditCard, LogOut, Languages, Store } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { loadSettings, saveSettings } from '@/lib/settings';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const [touristEmail, setTouristEmail] = React.useState('');
   const [locationStatus, setLocationStatus] = React.useState<string | null>(null);
   const [touristId, setTouristId] = React.useState<number | null>(null);
+  const [role, setRole] = React.useState<string>('tourist');
   const { t } = useTranslation();
 
   React.useEffect(() => {
@@ -26,6 +27,10 @@ export default function ProfilePage() {
     const storedTourist = localStorage.getItem('ola-tourist-id');
     if (storedTourist) {
       setTouristId(Number(storedTourist));
+    }
+    const storedRole = localStorage.getItem('ola-mexico-role');
+    if (storedRole) {
+      setRole(storedRole);
     }
   }, []);
 
@@ -113,8 +118,10 @@ export default function ProfilePage() {
             <User size={32} />
           </div>
           <div>
-            <h2 className="text-xl font-black tracking-tight">Turista Mundial</h2>
-            <p className="text-sm font-medium text-[var(--muted)]">Invitado (Modo Demo)</p>
+            <h2 className="text-xl font-black tracking-tight">
+              {role === 'merchant' ? t('role_merchant') : t('role_tourist')}
+            </h2>
+            <p className="text-sm font-medium text-[var(--muted)]">{t('role_section')}</p>
           </div>
         </div>
       </div>
@@ -160,14 +167,15 @@ export default function ProfilePage() {
           </select>
         </div>
 
+        {role !== 'merchant' && (
         <div className="w-full bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
           <div className="flex items-center gap-4">
             <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
               <User size={20} />
             </div>
             <div className="text-left">
-              <span className="font-bold block text-gray-900">Registro de turista</span>
-              <span className="text-xs text-gray-500 font-medium">Guarda tu ubicación actual</span>
+              <span className="font-bold block text-gray-900">{t('tourist_register_title')}</span>
+              <span className="text-xs text-gray-500 font-medium">{t('tourist_register_help')}</span>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -203,14 +211,14 @@ export default function ProfilePage() {
                 );
               }}
             >
-              Guardar ubicación
+              {t('save_location')}
             </button>
             {touristId ? (
               <button
                 className="border border-red-200 text-red-600 font-bold px-4 py-2 rounded-xl"
                 onClick={deleteTourist}
               >
-                Eliminar registro
+                {t('delete_registration')}
               </button>
             ) : null}
             {locationStatus ? (
@@ -218,6 +226,27 @@ export default function ProfilePage() {
             ) : null}
           </div>
         </div>
+        )}
+
+        {role === 'merchant' && (
+          <div className="w-full bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                <Store size={20} />
+              </div>
+              <div className="text-left">
+                <span className="font-bold block text-gray-900">{t('manage_locations')}</span>
+                <span className="text-xs text-gray-500 font-medium">{t('merchant_subtitle')}</span>
+              </div>
+            </div>
+            <button
+              className="bg-[var(--primary)] text-white font-bold px-4 py-2 rounded-xl"
+              onClick={() => window.location.href = '/merchant'}
+            >
+              {t('manage_locations')}
+            </button>
+          </div>
+        )}
 
         <div className="w-full bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-4">

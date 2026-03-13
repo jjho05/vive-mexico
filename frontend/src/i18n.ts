@@ -55,6 +55,14 @@ const resources = {
       ,"menu_upload_button": "Upload menu photo"
       ,"menu_empty": "No items uploaded yet."
       ,"save_changes": "Save changes"
+      ,"role_section": "Account type"
+      ,"role_tourist": "Tourist"
+      ,"role_merchant": "Merchant"
+      ,"manage_locations": "Manage locations"
+      ,"tourist_register_title": "Tourist registration"
+      ,"tourist_register_help": "Save your current location"
+      ,"save_location": "Save location"
+      ,"delete_registration": "Delete registration"
     }
   },
   es: {
@@ -109,6 +117,14 @@ const resources = {
       ,"menu_upload_button": "Subir foto del menú"
       ,"menu_empty": "Aún no hay platillos cargados."
       ,"save_changes": "Guardar cambios"
+      ,"role_section": "Tipo de cuenta"
+      ,"role_tourist": "Turista"
+      ,"role_merchant": "Comerciante"
+      ,"manage_locations": "Administrar locales"
+      ,"tourist_register_title": "Registro de turista"
+      ,"tourist_register_help": "Guarda tu ubicación actual"
+      ,"save_location": "Guardar ubicación"
+      ,"delete_registration": "Eliminar registro"
     }
   },
   ko: {
@@ -163,6 +179,14 @@ const resources = {
       ,"menu_upload_button": "메뉴 사진 업로드"
       ,"menu_empty": "등록된 항목이 없습니다."
       ,"save_changes": "변경 저장"
+      ,"role_section": "계정 유형"
+      ,"role_tourist": "관광객"
+      ,"role_merchant": "판매자"
+      ,"manage_locations": "지점 관리"
+      ,"tourist_register_title": "관광객 등록"
+      ,"tourist_register_help": "현재 위치 저장"
+      ,"save_location": "위치 저장"
+      ,"delete_registration": "등록 삭제"
     }
   },
   de: {
@@ -217,6 +241,14 @@ const resources = {
       ,"menu_upload_button": "Menüfoto hochladen"
       ,"menu_empty": "Noch keine Einträge."
       ,"save_changes": "Änderungen speichern"
+      ,"role_section": "Kontotyp"
+      ,"role_tourist": "Tourist"
+      ,"role_merchant": "Händler"
+      ,"manage_locations": "Standorte verwalten"
+      ,"tourist_register_title": "Touristenregistrierung"
+      ,"tourist_register_help": "Aktuellen Standort speichern"
+      ,"save_location": "Standort speichern"
+      ,"delete_registration": "Registrierung löschen"
     }
   },
   fr: {
@@ -271,6 +303,14 @@ const resources = {
       ,"menu_upload_button": "Téléverser le menu"
       ,"menu_empty": "Aucun élément pour l’instant."
       ,"save_changes": "Enregistrer les changements"
+      ,"role_section": "Type de compte"
+      ,"role_tourist": "Touriste"
+      ,"role_merchant": "Commerçant"
+      ,"manage_locations": "Gérer les établissements"
+      ,"tourist_register_title": "Inscription touriste"
+      ,"tourist_register_help": "Enregistrer la position actuelle"
+      ,"save_location": "Enregistrer la position"
+      ,"delete_registration": "Supprimer l’inscription"
     }
   },
   ar: {
@@ -325,6 +365,14 @@ const resources = {
       ,"menu_upload_button": "رفع صورة القائمة"
       ,"menu_empty": "لا توجد عناصر بعد."
       ,"save_changes": "حفظ التغييرات"
+      ,"role_section": "نوع الحساب"
+      ,"role_tourist": "سائح"
+      ,"role_merchant": "تاجر"
+      ,"manage_locations": "إدارة المواقع"
+      ,"tourist_register_title": "تسجيل السائح"
+      ,"tourist_register_help": "حفظ موقعك الحالي"
+      ,"save_location": "حفظ الموقع"
+      ,"delete_registration": "حذف التسجيل"
     }
   },
   pt: {
@@ -379,6 +427,14 @@ const resources = {
       ,"menu_upload_button": "Enviar foto do menu"
       ,"menu_empty": "Sem itens ainda."
       ,"save_changes": "Salvar alterações"
+      ,"role_section": "Tipo de conta"
+      ,"role_tourist": "Turista"
+      ,"role_merchant": "Comerciante"
+      ,"manage_locations": "Gerenciar locais"
+      ,"tourist_register_title": "Registro de turista"
+      ,"tourist_register_help": "Salvar localização atual"
+      ,"save_location": "Salvar localização"
+      ,"delete_registration": "Excluir registro"
     }
   },
   no: {
@@ -433,6 +489,14 @@ const resources = {
       ,"menu_upload_button": "Last opp menybilde"
       ,"menu_empty": "Ingen elementer ennå."
       ,"save_changes": "Lagre endringer"
+      ,"role_section": "Kontotype"
+      ,"role_tourist": "Turist"
+      ,"role_merchant": "Forhandler"
+      ,"manage_locations": "Administrer lokaler"
+      ,"tourist_register_title": "Turistregistrering"
+      ,"tourist_register_help": "Lagre nåværende posisjon"
+      ,"save_location": "Lagre posisjon"
+      ,"delete_registration": "Slett registrering"
     }
   }
 };
