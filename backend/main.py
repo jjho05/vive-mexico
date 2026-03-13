@@ -9,6 +9,7 @@ from backend.api.routes import vision_router
 from backend.services.currency_service import currency_service
 from backend.database.supabase_client import supabase
 from backend.database.models import Business
+app = FastAPI(title="Ola México API")
 
 app.include_router(vision_router)
 
