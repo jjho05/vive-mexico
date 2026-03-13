@@ -104,8 +104,9 @@ class VisionService:
             lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
             price_lines = []
             name_lines = []
+            price_line_re = re.compile(r"^\$?\s*[0-9]{1,4}(?:[.,][0-9]{1,2})?\s*$")
             for line in lines:
-                if re.fullmatch(r"\\$?\\s*[0-9]{1,4}(?:[\\.,][0-9]{1,2})?\\s*", line):
+                if price_line_re.fullmatch(line):
                     price_lines.append(line)
                 else:
                     name_lines.append(line)
