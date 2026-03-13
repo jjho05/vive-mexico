@@ -3,6 +3,7 @@ export type Settings = {
   currency: string;
   advancedEnabled: boolean;
   translateLang?: string;
+  country?: string;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -10,6 +11,7 @@ const DEFAULT_SETTINGS: Settings = {
   currency: 'USD',
   advancedEnabled: false,
   translateLang: 'en',
+  country: 'MX',
 };
 
 export function loadSettings(): Settings {

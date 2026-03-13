@@ -164,13 +164,19 @@ export default function ScannerPage() {
                   {item.category ? (
                     <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{item.category}</p>
                   ) : null}
-                  {showOriginal && item.original ? (
-                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">{item.original}</p>
-                  ) : null}
-                  <div className="flex justify-between items-center mt-1">
-                    <p className="font-bold text-lg text-gray-900">{item.translated || item.original}</p>
-                    <p className="font-black text-green-600">
-                      {item.currency || result?.target_currency || "MXN"} {Number(item.price_target || item.price_mxn || 0).toLocaleString()}
+                  <div className="flex justify-between items-start mt-1 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <p className="font-bold text-lg text-gray-900">{item.translated || item.original}</p>
+                      {showOriginal && item.original ? (
+                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">{item.original}</p>
+                      ) : null}
+                    </div>
+                    <p className="font-black text-green-600 whitespace-nowrap">
+                      {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: (item.currency || result?.target_currency || 'MXN'),
+                        maximumFractionDigits: 2,
+                      }).format(Number(item.price_target || item.price_mxn || 0))}
                     </p>
                   </div>
                 </div>

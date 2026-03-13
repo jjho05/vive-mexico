@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const [currency, setCurrency] = React.useState('USD');
   const [advancedEnabled, setAdvancedEnabled] = React.useState(false);
   const [translateLang, setTranslateLang] = React.useState('en');
+  const [country, setCountry] = React.useState('MX');
   const { t } = useTranslation();
 
   React.useEffect(() => {
@@ -17,6 +18,7 @@ export default function ProfilePage() {
     setCurrency(settings.currency);
     setAdvancedEnabled(settings.advancedEnabled);
     setTranslateLang(settings.translateLang || 'en');
+    setCountry(settings.country || 'MX');
   }, []);
 
   React.useEffect(() => {
@@ -25,8 +27,9 @@ export default function ProfilePage() {
       currency,
       advancedEnabled,
       translateLang,
+      country,
     });
-  }, [currency, advancedEnabled, translateLang]);
+  }, [currency, advancedEnabled, translateLang, country]);
 
   const handleLogout = () => {
     try {
@@ -126,6 +129,37 @@ export default function ProfilePage() {
             <option value="EUR">EUR (€)</option>
             <option value="GBP">GBP (£)</option>
             <option value="JPY">JPY (¥)</option>
+          </select>
+        </div>
+
+        <div className="w-full bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+              <Globe size={20} />
+            </div>
+            <div className="text-left">
+              <span className="font-bold block text-gray-900">País de visita</span>
+              <span className="text-xs text-gray-500 font-medium">Define moneda sugerida</span>
+            </div>
+          </div>
+          <select
+            className="border border-gray-200 rounded-lg px-2 py-1 text-sm bg-white"
+            value={country}
+            onChange={(e) => {
+              const value = e.target.value;
+              setCountry(value);
+              if (value === 'MX') setCurrency('MXN');
+              if (value === 'US') setCurrency('USD');
+              if (value === 'EU') setCurrency('EUR');
+              if (value === 'GB') setCurrency('GBP');
+              if (value === 'JP') setCurrency('JPY');
+            }}
+          >
+            <option value="MX">México (MXN)</option>
+            <option value="US">Estados Unidos (USD)</option>
+            <option value="EU">Unión Europea (EUR)</option>
+            <option value="GB">Reino Unido (GBP)</option>
+            <option value="JP">Japón (JPY)</option>
           </select>
         </div>
 
