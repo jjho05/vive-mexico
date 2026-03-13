@@ -105,7 +105,7 @@ if os.path.exists(static_path):
     # Montamos archivos exactos sueltos pero sin html=True global
     app.mount("/static", StaticFiles(directory=static_path), name="static")
 
-    @app.get("/{path:path}")
+    @app.api_route("/{path:path}", methods=["GET", "HEAD", "POST"])
     async def catch_all_spa(request: Request, path: str):
         # Prevent intercepting API routes that might have somehow fallen through
         if path.startswith("api/"):

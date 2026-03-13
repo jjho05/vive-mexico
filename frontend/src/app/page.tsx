@@ -28,7 +28,7 @@ export default function Home() {
       try {
         const response = await fetch("/api/businesses");
         const data = await response.json();
-        setBusinesses(data);
+        setBusinesses(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching businesses:", error);
       } finally {

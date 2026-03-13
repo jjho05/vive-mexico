@@ -18,6 +18,9 @@ export default function ScannerPage() {
         method: "POST",
         body: new FormData() // Aquí iría el archivo real
       });
+      if (!response.ok) {
+        throw new Error(`Scan failed with status ${response.status}`);
+      }
       const data = await response.json();
       setResult(data);
     } catch (error) {
@@ -82,7 +85,7 @@ export default function ScannerPage() {
             </div>
 
             <div className="flex flex-col gap-4">
-              {result.items.map((item: any, i: number) => (
+              {(Array.isArray(result.items) ? result.items : []).map((item: any, i: number) => (
                 <div key={i} className="border-b pb-4 last:border-0">
                   <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">{item.original}</p>
                   <div className="flex justify-between items-center mt-1">
