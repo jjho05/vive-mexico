@@ -3,12 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from typing import List, Optional
+import uuid
 import uvicorn
 import os
 from backend.api.routes import vision_router
 from backend.services.currency_service import currency_service
 from backend.database.supabase_client import supabase
-from backend.database.models import Business, Tourist
+from backend.database.models import Business, Tourist, Merchant
 from backend.services.geo_service import geo_service
 app = FastAPI(title="Ola México API")
 
@@ -102,6 +103,83 @@ async def update_merchant_location(merchant_id: int, address: str):
         print(f"Update Location Error: {e}")
     return {"message": "No se pudo actualizar"}
 
+@app.post("/api/merchants")
+async def create_merchant(merchant: Merchant):
+    try:
+        data = merchant.dict()
+        data["id"] = data.get("id") or str(uuid.uuid4())
+        if supabase is not None:
+            res = supabase.table("merchants").insert(data).execute()
+            return {"message": "Comerciante creado", "data": res.data}
+    except Exception as e:
+        print(f"Create Merchant Error: {e}")
+    return {"message": "Supabase no configurado", "merchant": merchant}
+
+@app.get("/api/merchants/{merchant_id}")
+async def get_merchant(merchant_id: str):
+    try:
+        if supabase is not None:
+            res = supabase.table("merchants").select("*").eq("id", merchant_id).execute()
+            return res.data[0] if res.data else None
+    except Exception as e:
+        print(f"Get Merchant Error: {e}")
+    return None
+
+@app.put("/api/merchants/{merchant_id}")
+async def update_merchant(merchant_id: str, merchant: Merchant):
+    try:
+        data = merchant.dict()
+        data.pop("id", None)
+        if supabase is not None:
+            res = supabase.table("merchants").update(data).eq("id", merchant_id).execute()
+            return {"message": "Comerciante actualizado", "data": res.data}
+    except Exception as e:
+        print(f"Update Merchant Error: {e}")
+    return {"message": "No se pudo actualizar"}
+
+@app.get("/api/merchants/{merchant_id}/businesses")
+async def get_merchant_businesses(merchant_id: str):
+    try:
+        if supabase is not None:
+            res = supabase.table("businesses").select("*").eq("merchant_id", merchant_id).execute()
+            return res.data
+    except Exception as e:
+        print(f"Get Merchant Businesses Error: {e}")
+    return []
+
+@app.post("/api/merchants/{merchant_id}/businesses")
+async def create_merchant_business(merchant_id: str, business: Business):
+    try:
+        data = business.dict()
+        data["merchant_id"] = merchant_id
+        if (not data.get("lat") or not data.get("lng")) and data.get("address"):
+            coords = await geo_service.geocode(data.get("address"))
+            if coords:
+                data["lat"], data["lng"] = coords
+        if supabase is not None:
+            res = supabase.table("businesses").insert(data).execute()
+            return {"message": "Local creado", "data": res.data}
+    except Exception as e:
+        print(f"Create Merchant Business Error: {e}")
+    return {"message": "No se pudo crear"}
+
+@app.put("/api/merchants/{merchant_id}/businesses/{business_id}")
+async def update_merchant_business(merchant_id: str, business_id: int, business: Business):
+    try:
+        data = business.dict()
+        data["merchant_id"] = merchant_id
+        data.pop("id", None)
+        if (not data.get("lat") or not data.get("lng")) and data.get("address"):
+            coords = await geo_service.geocode(data.get("address"))
+            if coords:
+                data["lat"], data["lng"] = coords
+        if supabase is not None:
+            res = supabase.table("businesses").update(data).eq("id", business_id).execute()
+            return {"message": "Local actualizado", "data": res.data}
+    except Exception as e:
+        print(f"Update Merchant Business Error: {e}")
+    return {"message": "No se pudo actualizar"}
+
 @app.get("/api/recommendations")
 async def get_recommendations(interests: Optional[str] = None):
     # For now, just return all if no interests
@@ -117,6 +195,38 @@ async def register_tourist(tourist: Tourist):
     except Exception as e:
         print(f"Tourist Register Error: {e}")
     return {"message": "Supabase no configurado", "tourist": tourist}
+
+@app.get("/api/tourists/{tourist_id}")
+async def get_tourist(tourist_id: int):
+    try:
+        if supabase is not None:
+            res = supabase.table("tourists").select("*").eq("id", tourist_id).execute()
+            return res.data[0] if res.data else None
+    except Exception as e:
+        print(f"Get Tourist Error: {e}")
+    return None
+
+@app.put("/api/tourists/{tourist_id}")
+async def update_tourist(tourist_id: int, tourist: Tourist):
+    try:
+        data = tourist.dict()
+        data.pop("id", None)
+        if supabase is not None:
+            res = supabase.table("tourists").update(data).eq("id", tourist_id).execute()
+            return {"message": "Turista actualizado", "data": res.data}
+    except Exception as e:
+        print(f"Update Tourist Error: {e}")
+    return {"message": "No se pudo actualizar"}
+
+@app.delete("/api/tourists/{tourist_id}")
+async def delete_tourist(tourist_id: int):
+    try:
+        if supabase is not None:
+            res = supabase.table("tourists").delete().eq("id", tourist_id).execute()
+            return {"message": "Turista eliminado", "data": res.data}
+    except Exception as e:
+        print(f"Delete Tourist Error: {e}")
+    return {"message": "No se pudo eliminar"}
 
 @app.get("/api/businesses/nearby")
 async def get_nearby_businesses(lat: float, lng: float, radius_km: float = 3.0, limit: int = 20):

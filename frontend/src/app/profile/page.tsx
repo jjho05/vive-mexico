@@ -14,6 +14,7 @@ export default function ProfilePage() {
   const [touristName, setTouristName] = React.useState('');
   const [touristEmail, setTouristEmail] = React.useState('');
   const [locationStatus, setLocationStatus] = React.useState<string | null>(null);
+  const [touristId, setTouristId] = React.useState<number | null>(null);
   const { t } = useTranslation();
 
   React.useEffect(() => {
@@ -22,6 +23,10 @@ export default function ProfilePage() {
     setAdvancedEnabled(settings.advancedEnabled);
     setTranslateLang(settings.translateLang || 'en');
     setCountry(settings.country || 'MX');
+    const storedTourist = localStorage.getItem('ola-tourist-id');
+    if (storedTourist) {
+      setTouristId(Number(storedTourist));
+    }
   }, []);
 
   React.useEffect(() => {
@@ -44,13 +49,34 @@ export default function ProfilePage() {
         lat: lat ?? null,
         lng: lng ?? null,
       };
-      const response = await fetch("/api/tourists/register", {
-        method: "POST",
+      const endpoint = touristId ? `/api/tourists/${touristId}` : "/api/tourists/register";
+      const method = touristId ? "PUT" : "POST";
+      const response = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error("error");
+      const data = await response.json();
+      const id = data?.data?.[0]?.id;
+      if (id) {
+        setTouristId(id);
+        localStorage.setItem('ola-tourist-id', String(id));
+      }
       setLocationStatus("Guardado");
+    } catch {
+      setLocationStatus("Error");
+    }
+  };
+
+  const deleteTourist = async () => {
+    if (!touristId) return;
+    try {
+      const response = await fetch(`/api/tourists/${touristId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("error");
+      localStorage.removeItem('ola-tourist-id');
+      setTouristId(null);
+      setLocationStatus("Eliminado");
     } catch {
       setLocationStatus("Error");
     }
@@ -179,6 +205,14 @@ export default function ProfilePage() {
             >
               Guardar ubicación
             </button>
+            {touristId ? (
+              <button
+                className="border border-red-200 text-red-600 font-bold px-4 py-2 rounded-xl"
+                onClick={deleteTourist}
+              >
+                Eliminar registro
+              </button>
+            ) : null}
             {locationStatus ? (
               <span className="text-xs text-gray-500">{locationStatus}</span>
             ) : null}

@@ -12,6 +12,7 @@ CREATE TABLE businesses (
     lng FLOAT,
     rating FLOAT DEFAULT 0,
     address TEXT,
+    merchant_id UUID,
     owner_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -36,6 +37,18 @@ CREATE TABLE tourists (
     lng FLOAT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- 4. Comerciantes
+CREATE TABLE IF NOT EXISTS merchants (
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    phone TEXT,
+    email TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE businesses
+  ADD COLUMN IF NOT EXISTS merchant_id UUID;
 
 -- RLS (Row Level Security) - Simplificado para el Nacional
 ALTER TABLE businesses ENABLE ROW LEVEL SECURITY;

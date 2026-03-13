@@ -3,13 +3,14 @@ from typing import List, Optional
 
 class Business(BaseModel):
     id: Optional[int] = None
+    merchant_id: Optional[str] = None
     name: str
     category: str
     description: str
     tags: List[str]
     image_url: str
-    lat: float
-    lng: float
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     rating: float
     address: str
 
@@ -26,3 +27,9 @@ class Tourist(BaseModel):
     preferred_currency: Optional[str] = None
     lat: Optional[float] = None
     lng: Optional[float] = None
+
+class Merchant(BaseModel):
+    id: Optional[str] = None
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
