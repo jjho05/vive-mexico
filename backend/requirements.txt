@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+pandas
+scikit-learn
+opencv-python
+easyocr
+httpx
+stripe
+langchain
+openai
+supabase
