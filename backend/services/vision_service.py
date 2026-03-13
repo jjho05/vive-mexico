@@ -98,23 +98,45 @@ class VisionService:
         # 3. Traducción Cultural (Simulada para mantener el flujo pero preparada para NLLB-200)
         # En una versión full, enviaríamos el 'raw_text' a self.translate_api_url
 
-        # Parse básico: detectar precios y asignar nombre por ventana de palabras previa
+        # Parse por bloques: detectar nombres y luego asociar precios cercanos
         items = []
         if raw_text:
-            cleaned = re.sub(r"\\s+", " ", raw_text).strip()
-            price_matches = list(re.finditer(r"(?i)(?:mxn|\\$)?\\s*([0-9]{1,4}(?:[\\.,][0-9]{1,2})?)", cleaned))
-            for match in price_matches:
-                price_str = match.group(1).replace(",", ".")
-                try:
-                    price = float(price_str)
-                except Exception:
-                    continue
-                # Take up to 6 words before the price as the item name
-                prefix = cleaned[:match.start()].strip()
-                words = prefix.split(" ")
-                name = " ".join(words[-6:]).strip()
-                if name:
+            lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
+            price_lines = []
+            name_lines = []
+            for line in lines:
+                if re.fullmatch(r"\\$?\\s*[0-9]{1,4}(?:[\\.,][0-9]{1,2})?\\s*", line):
+                    price_lines.append(line)
+                else:
+                    name_lines.append(line)
+
+            # If there are both, pair by order
+            if name_lines and price_lines:
+                pairs = min(len(name_lines), len(price_lines))
+                for i in range(pairs):
+                    price_str = price_lines[i].replace("$", "").replace(",", ".").strip()
+                    try:
+                        price = float(price_str)
+                    except Exception:
+                        continue
+                    name = name_lines[i]
                     items.append({"name": name, "price_mxn": price})
+            else:
+                # Fallback to window parse
+                cleaned = re.sub(r"\\s+", " ", raw_text).strip()
+                price_matches = list(re.finditer(r"(?i)(?:mxn|\\$)?\\s*([0-9]{1,4}(?:[\\.,][0-9]{1,2})?)", cleaned))
+                for match in price_matches:
+                    price_str = match.group(1).replace(",", ".")
+                    try:
+                        price = float(price_str)
+                    except Exception:
+                        continue
+                    prefix = cleaned[:match.start()].strip()
+                    words = prefix.split(" ")
+                    name = " ".join(words[-6:]).strip()
+                    if name:
+                        items.append({"name": name, "price_mxn": price})
+
             # De-duplicate by name+price
             seen = set()
             deduped = []
