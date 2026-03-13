@@ -1,0 +1,93 @@
+'use client';
+
+import React from 'react';
+import { User, Settings, Globe, CreditCard, LogOut, ChevronRight } from 'lucide-react';
+
+export default function ProfilePage() {
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('ola-mexico-role');
+    } catch (e) {}
+    window.location.href = '/';
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 h-full pb-20">
+      <header className="mb-2 w-full flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-black italic tracking-tighter uppercase">
+            Mi <span className="text-[var(--primary)]">Perfil</span>
+          </h1>
+          <p className="text-[var(--muted)] font-medium">Gestiona tu experiencia.</p>
+        </div>
+        <button 
+          onClick={handleLogout}
+          className="text-red-500 bg-red-50 p-3 rounded-full hover:bg-red-100 transition-colors"
+          title="Cerrar sesión"
+        >
+          <LogOut size={20} />
+        </button>
+      </header>
+
+      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-[var(--primary)]/10 rounded-full flex items-center justify-center text-[var(--primary)]">
+            <User size={32} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black tracking-tight">Turista Mundial</h2>
+            <p className="text-sm font-medium text-[var(--muted)]">Invitado (Modo Demo)</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 mt-4">
+        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 pl-2">Preferencias</h3>
+        
+        <button className="w-full bg-white p-5 rounded-2xl flex items-center justify-between shadow-sm border border-gray-100 hover:border-gray-300 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+              <Globe size={20} />
+            </div>
+            <div className="text-left">
+              <span className="font-bold block text-gray-900">Idioma Principal</span>
+              <span className="text-xs text-gray-500 font-medium">Inglés (Traducción Activa)</span>
+            </div>
+          </div>
+          <ChevronRight className="text-gray-300" />
+        </button>
+
+        <button className="w-full bg-white p-5 rounded-2xl flex items-center justify-between shadow-sm border border-gray-100 hover:border-gray-300 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-green-50 text-green-600 rounded-xl">
+              <CreditCard size={20} />
+            </div>
+            <div className="text-left">
+              <span className="font-bold block text-gray-900">Moneda a Mostrar</span>
+              <span className="text-xs text-gray-500 font-medium">USD ($)</span>
+            </div>
+          </div>
+          <ChevronRight className="text-gray-300" />
+        </button>
+
+        <button className="w-full bg-white p-5 rounded-2xl flex items-center justify-between shadow-sm border border-gray-100 hover:border-gray-300 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-gray-100 text-gray-600 rounded-xl">
+              <Settings size={20} />
+            </div>
+            <div className="text-left">
+              <span className="font-bold block text-gray-900">Ajustes Avanzados</span>
+              <span className="text-xs text-gray-500 font-medium">Notificaciones, Privacidad</span>
+            </div>
+          </div>
+          <ChevronRight className="text-gray-300" />
+        </button>
+      </div>
+      
+      <div className="mt-8 text-center px-4">
+        <p className="text-xs text-gray-400 font-medium">Ola México - Edición Especial Mundial 2026</p>
+        <p className="text-xs text-gray-400 font-medium">Versión 1.0.0 (Cloud Build)</p>
+      </div>
+    </div>
+  );
+}

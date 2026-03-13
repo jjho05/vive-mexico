@@ -35,7 +35,7 @@ export default function ScannerPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-md mx-auto h-full">
+    <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto h-full">
       <header>
         <h1 className="text-2xl font-bold">AI Menu Scanner</h1>
         <p className="text-gray-500">Translate and convert prices in real-time.</p>

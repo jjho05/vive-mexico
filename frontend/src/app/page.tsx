@@ -27,8 +27,22 @@ export default function Home() {
   const { t } = useTranslation();
   const [businesses, setBusinesses] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [role, setRole] = React.useState<string | null>("loading");
 
   React.useEffect(() => {
+    try {
+      const savedRole = localStorage.getItem('ola-mexico-role');
+      if (savedRole === 'merchant') {
+        window.location.href = '/merchant';
+      } else if (savedRole === 'tourist') {
+        setRole(savedRole);
+      } else {
+        setRole(null);
+      }
+    } catch (e) {
+      setRole(null);
+    }
+
     const fetchBusinesses = async () => {
       try {
         const response = await fetch("/api/businesses");
@@ -43,8 +57,50 @@ export default function Home() {
     fetchBusinesses();
   }, []);
 
+  if (role === "loading") return null;
+
+  if (role === null) {
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col gap-6 text-center relative overflow-hidden">
+          {/* Decorative background circle */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-[var(--primary)]/10 rounded-full blur-2xl"></div>
+          
+          <div className="relative z-10 pt-4">
+            <h2 className="text-4xl font-black italic tracking-tighter">
+              OLA <span className="text-[var(--primary)]">MÉXICO</span>
+            </h2>
+            <p className="text-[var(--secondary)] font-black mt-1 text-xs uppercase tracking-widest">World Cup 2026</p>
+            <p className="text-gray-600 font-medium mt-8 text-lg">¿Cómo deseas usar la app hoy?</p>
+          </div>
+          
+          <div className="flex flex-col gap-4 relative z-10 pb-2">
+            <button 
+              onClick={() => {
+                try { localStorage.setItem('ola-mexico-role', 'tourist') } catch(e){}
+                setRole('tourist');
+              }}
+              className="w-full bg-[var(--primary)] text-white font-bold py-4 rounded-xl shadow-lg hover:opacity-90 active:scale-95 transition-all"
+            >
+              Soy Turista / Visitante
+            </button>
+            <button 
+              onClick={() => {
+                try { localStorage.setItem('ola-mexico-role', 'merchant') } catch(e){}
+                window.location.href = '/merchant';
+              }}
+              className="w-full bg-white border-2 border-[var(--primary)] text-[var(--primary)] font-bold py-4 rounded-xl shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+            >
+              Soy Comerciante Local
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-8 max-w-md mx-auto">
+    <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto">
       <header className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-4xl font-black italic tracking-tighter">

@@ -61,7 +61,7 @@ export default function MerchantDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-md mx-auto pb-24">
+    <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto pb-24">
       <header className="mb-4">
         <h1 className="text-3xl font-black italic tracking-tighter uppercase">
           Portal <span className="text-[var(--primary)]">Comerciante</span>

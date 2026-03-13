@@ -96,10 +96,25 @@ static_path = os.path.join(os.path.dirname(__file__), "..", "static")
 if os.path.exists(static_path):
     app.mount("/", StaticFiles(directory=static_path, html=True), name="static")
 
-    # Catch-all for SPA routing (Next.js)
+    # Handling SPA routing correctly for Next.js static export
     @app.exception_handler(404)
     async def not_found_handler(request: Request, exc):
-        return FileResponse(os.path.join(static_path, "index.html"))
+        path = request.url.path.strip("/")
+        if not path:
+            path = "index"
+        
+        # Primero intentar servir {path}.html (ej. /scanner -> /app/static/scanner.html)
+        html_path = os.path.join(static_path, f"{path}.html")
+        if os.path.exists(html_path):
+            return FileResponse(html_path)
+        
+        # Si es una ruta anidada (ej. /merchant/settings), podríamos necesitar lógica más compleja
+        # Por ahora regresamos index.html como fallback genérico
+        index_path = os.path.join(static_path, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+            
+        return FileResponse(os.path.join(static_path, "404.html"))
 
 if __name__ == "__main__":
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
