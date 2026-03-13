@@ -1,6 +1,6 @@
 import httpx
 from typing import Dict, Any
-from services.currency_service import currency_service
+from backend.services.currency_service import currency_service
 import os
 
 class VisionService:

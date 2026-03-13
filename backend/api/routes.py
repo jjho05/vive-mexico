@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File
-from services.vision_service import vision_service
-from services.currency_service import currency_service
+from backend.services.vision_service import vision_service
+from backend.services.currency_service import currency_service
 from typing import Optional
 
 router = APIRouter(prefix="/api/vision", tags=["vision"])

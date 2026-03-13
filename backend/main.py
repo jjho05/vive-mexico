@@ -5,10 +5,10 @@ from fastapi.responses import FileResponse
 from typing import List, Optional
 import uvicorn
 import os
-from api.routes import vision_router
-from services.currency_service import currency_service
-from database.supabase_client import supabase
-from database.models import Business
+from backend.api.routes import vision_router
+from backend.services.currency_service import currency_service
+from backend.database.supabase_client import supabase
+from backend.database.models import Business
 
 app.include_router(vision_router)
 
