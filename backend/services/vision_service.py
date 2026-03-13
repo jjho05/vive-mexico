@@ -75,6 +75,7 @@ class VisionService:
             
         return {
             "items": processed_items,
+            "raw_text": raw_text,
             "target_lang": target_lang,
             "target_currency": target_currency,
             "status": "success" if self.hf_token else "no_data",

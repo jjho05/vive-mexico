@@ -12,6 +12,15 @@ export default function Home() {
   const [role, setRole] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    try {
+      const savedRole = localStorage.getItem('ola-mexico-role');
+      if (savedRole === 'merchant') {
+        window.location.href = '/merchant';
+      } else if (savedRole === 'tourist') {
+        setRole(savedRole);
+      }
+    } catch {}
+
     const fetchBusinesses = async () => {
       try {
         const response = await fetch("/api/businesses");
@@ -44,7 +53,11 @@ export default function Home() {
           <div className="flex flex-col gap-4 relative z-10 pb-2">
             <button 
               onClick={() => {
-                try { localStorage.setItem('ola-mexico-role', 'tourist') } catch(e){}
+                try {
+                  localStorage.setItem('ola-mexico-role', 'tourist');
+                  const deviceLang = navigator.language?.split('-')[0] || 'en';
+                  localStorage.setItem('ola-mexico-lang', deviceLang);
+                } catch {}
                 setRole('tourist');
               }}
               className="w-full bg-[var(--primary)] text-white font-bold py-4 rounded-xl shadow-lg hover:opacity-90 active:scale-95 transition-all"
@@ -53,7 +66,10 @@ export default function Home() {
             </button>
             <button 
               onClick={() => {
-                try { localStorage.setItem('ola-mexico-role', 'merchant') } catch(e){}
+                try {
+                  localStorage.setItem('ola-mexico-role', 'merchant');
+                  localStorage.setItem('ola-mexico-lang', 'es');
+                } catch {}
                 window.location.href = '/merchant';
               }}
               className="w-full bg-white border-2 border-[var(--primary)] text-[var(--primary)] font-bold py-4 rounded-xl shadow-sm hover:bg-gray-50 active:scale-95 transition-all"

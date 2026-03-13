@@ -86,6 +86,7 @@ i18n
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'ola-mexico-lang',
     },
     interpolation: {
       escapeValue: false

@@ -93,7 +93,12 @@ export default function ScannerPage() {
 
             <div className="flex flex-col gap-4">
               {(Array.isArray(result.items) ? result.items : []).length === 0 && (
-                <div className="text-sm text-gray-500">No se detectaron platillos. Intenta con otra foto.</div>
+                <div className="text-sm text-gray-500">
+                  No se detectaron platillos. Intenta con otra foto.
+                  {result?.raw_text ? (
+                    <div className="mt-2 text-xs text-gray-400">Texto detectado: {result.raw_text}</div>
+                  ) : null}
+                </div>
               )}
               {(Array.isArray(result.items) ? result.items : []).map((item: any, i: number) => (
                 <div key={i} className="border-b pb-4 last:border-0">

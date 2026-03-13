@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Search, Bell } from 'lucide-react';
+import { LanguageSelector } from './LanguageSelector';
 
 const Navbar = () => {
   return (
@@ -12,6 +13,9 @@ const Navbar = () => {
         </Link>
       </div>
       <div className="flex items-center gap-3">
+        <div className="hidden sm:flex">
+          <LanguageSelector />
+        </div>
         <Link href="/merchant" className="text-[10px] font-bold uppercase tracking-widest text-[var(--primary)] border-2 border-[var(--primary)] px-3 py-1.5 rounded-full hover:bg-[var(--primary)] hover:text-white transition-all shadow-sm">
           Portal Socio
         </Link>
