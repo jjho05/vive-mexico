@@ -71,6 +71,9 @@ export default function ScannerPage() {
             >
               Subir imagen desde tu dispositivo
             </button>
+            <span className="text-xs text-white/70">
+              En PC usa “Subir imagen”. En móvil, el botón de cámara abre la cámara.
+            </span>
           </div>
         )}
 
@@ -97,7 +100,7 @@ export default function ScannerPage() {
                   onClick={handlePickPhoto}
                   className="text-xs font-semibold text-gray-700 underline underline-offset-4"
                 >
-                  Tomar otra foto
+                  Tomar otra foto (cámara)
                 </button>
                 <button
                   onClick={handlePickUpload}
