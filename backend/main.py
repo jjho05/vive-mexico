@@ -90,31 +90,43 @@ async def get_all_rates():
     rates = await currency_service.get_rates()
     return rates
 
-# Serve static files (Frontend)
-# In HF Spaces, the frontend build is copied to /app/static
-static_path = os.path.join(os.path.dirname(__file__), "..", "static")
 if os.path.exists(static_path):
-    app.mount("/", StaticFiles(directory=static_path, html=True), name="static")
+    # Disable html=True so /scanner hits the 404 handler, where we can intercept RSC
+    app.mount("/_next", StaticFiles(directory=os.path.join(static_path, "_next")), name="next_static")
+    
+    # Montamos archivos exactos sueltos pero sin html=True global
+    app.mount("/static", StaticFiles(directory=static_path), name="static")
 
-    # Handling SPA routing correctly for Next.js static export
-    @app.exception_handler(404)
-    async def not_found_handler(request: Request, exc):
-        path = request.url.path.strip("/")
+    @app.get("/{path:path}")
+    async def catch_all_spa(request: Request, path: str):
+        # Prevent intercepting API routes that might have somehow fallen through
+        if path.startswith("api/"):
+            return JSONResponse({"detail": "Not Found"}, status_code=404)
+            
+        path = path.strip("/")
         if not path:
             path = "index"
-        
-        # Primero intentar servir {path}.html (ej. /scanner -> /app/static/scanner.html)
-        html_path = os.path.join(static_path, f"{path}.html")
-        if os.path.exists(html_path):
-            return FileResponse(html_path)
-        
-        # Si es una ruta anidada (ej. /merchant/settings), podríamos necesitar lógica más compleja
-        # Por ahora regresamos index.html como fallback genérico
-        index_path = os.path.join(static_path, "index.html")
-        if os.path.exists(index_path):
-            return FileResponse(index_path)
             
-        return FileResponse(os.path.join(static_path, "404.html"))
+        is_rsc = request.headers.get("rsc") == "1"
+        
+        # 1. Provide exact file if it exists (e.g., favicon.ico, file.svg)
+        exact_path = os.path.join(static_path, path)
+        if os.path.isfile(exact_path):
+            return FileResponse(exact_path)
+            
+        # 2. If Next.js client router is prefetching/soft-navigating
+        if is_rsc:
+            txt_path = os.path.join(static_path, f"{path}.txt")
+            if os.path.isfile(txt_path):
+                return FileResponse(txt_path, media_type="text/x-component")
+                
+        # 3. Normal browser navigation
+        html_path = os.path.join(static_path, f"{path}.html")
+        if os.path.isfile(html_path):
+            return FileResponse(html_path, media_type="text/html")
+            
+        return FileResponse(os.path.join(static_path, "404.html"), media_type="text/html")
+
 
 if __name__ == "__main__":
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
