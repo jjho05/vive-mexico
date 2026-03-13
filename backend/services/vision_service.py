@@ -96,22 +96,33 @@ class VisionService:
         # 3. Traducción Cultural (Simulada para mantener el flujo pero preparada para NLLB-200)
         # En una versión full, enviaríamos el 'raw_text' a self.translate_api_url
 
-        # Parse básico: detectar líneas con precio y asignar nombre
+        # Parse básico: detectar precios y asignar nombre por ventana de palabras previa
         items = []
         if raw_text:
-            lines = [line.strip() for line in raw_text.replace("|", "\n").splitlines() if line.strip()]
-            for line in lines:
-                matches = re.findall(r"(?i)(?:mxn|\\$)?\\s*([0-9]{1,4}(?:[\\.,][0-9]{1,2})?)", line)
-                if not matches:
-                    continue
-                price_str = matches[-1].replace(",", ".")
+            cleaned = re.sub(r"\\s+", " ", raw_text).strip()
+            price_matches = list(re.finditer(r"(?i)(?:mxn|\\$)?\\s*([0-9]{1,4}(?:[\\.,][0-9]{1,2})?)", cleaned))
+            for match in price_matches:
+                price_str = match.group(1).replace(",", ".")
                 try:
                     price = float(price_str)
                 except Exception:
                     continue
-                name = re.sub(r"(?i)\\$?\\s*[0-9]{1,4}(?:[\\.,][0-9]{1,2})?\\s*(mxn)?", "", line).strip()
+                # Take up to 6 words before the price as the item name
+                prefix = cleaned[:match.start()].strip()
+                words = prefix.split(" ")
+                name = " ".join(words[-6:]).strip()
                 if name:
                     items.append({"name": name, "price_mxn": price})
+            # De-duplicate by name+price
+            seen = set()
+            deduped = []
+            for item in items:
+                key = (item["name"].lower(), item["price_mxn"])
+                if key in seen:
+                    continue
+                seen.add(key)
+                deduped.append(item)
+            items = deduped
         
         processed_items = []
         for item in items:
