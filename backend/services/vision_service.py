@@ -8,7 +8,7 @@ class VisionService:
         # Hugging Face Inference API Config (Serverless)
         self.hf_token = os.getenv("HF_TOKEN", "")
         # Modelos recomendados para Zero Budget (Inference API free)
-        self.ocr_api_url = "https://api-inference.huggingface.co/models/microsoft/trocr-base-handwritten"
+        self.ocr_api_url = "https://api-inference.huggingface.co/models/microsoft/trocr-base-printed"
         self.translate_api_url = "https://api-inference.huggingface.co/models/facebook/nllb-200-distilled-600M"
 
     async def call_hf_api(self, url: str, payload: Any, is_image: bool = False) -> Any:
@@ -44,9 +44,23 @@ class VisionService:
         
         # 3. Traducción Cultural (Simulada para mantener el flujo pero preparada para NLLB-200)
         # En una versión full, enviaríamos el 'raw_text' a self.translate_api_url
-        
-        # Mock parsing placeholder removido: si no hay OCR, regresamos lista vacía
+
+        # Parse básico: detectar líneas con precio y asignar nombre
         items = []
+        if raw_text:
+            lines = [line.strip() for line in raw_text.replace("|", "\n").splitlines() if line.strip()]
+            for line in lines:
+                parts = line.split()
+                price = None
+                name_parts = []
+                for part in parts:
+                    cleaned = part.replace("$", "").replace("MXN", "").replace("mxn", "")
+                    try:
+                        price = float(cleaned)
+                    except Exception:
+                        name_parts.append(part)
+                if price is not None and name_parts:
+                    items.append({"name": " ".join(name_parts), "price_mxn": price})
         
         processed_items = []
         for item in items:
