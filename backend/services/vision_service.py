@@ -9,7 +9,10 @@ class VisionService:
         # Hugging Face Inference API Config (Serverless)
         self.hf_token = os.getenv("HF_TOKEN", "")
         # Modelos recomendados para Zero Budget (Inference API free)
-        self.ocr_api_url = "https://api-inference.huggingface.co/models/microsoft/trocr-base-printed"
+        self.ocr_api_urls = [
+            "https://api-inference.huggingface.co/models/microsoft/trocr-small-printed",
+            "https://api-inference.huggingface.co/models/microsoft/trocr-base-printed",
+        ]
         self.translate_api_url = "https://api-inference.huggingface.co/models/facebook/nllb-200-distilled-600M"
 
     async def call_hf_api(self, url: str, payload: Any, is_image: bool = False) -> Any:
@@ -44,11 +47,21 @@ class VisionService:
         file_content = await file.read()
         
         # 1. OCR (Microsoft TrOCR)
-        ocr_result = await self.call_hf_api(self.ocr_api_url, file_content, is_image=True)
+        ocr_result = None
+        ocr_error = None
+        for url in self.ocr_api_urls:
+            ocr_result = await self.call_hf_api(url, file_content, is_image=True)
+            if isinstance(ocr_result, list) and ocr_result:
+                break
+            if isinstance(ocr_result, dict) and ocr_result.get("generated_text"):
+                break
+            if isinstance(ocr_result, dict) and ocr_result.get("error"):
+                ocr_error = ocr_result.get("error")
+                if ocr_result.get("status_code"):
+                    ocr_error = f"{ocr_error} (status {ocr_result.get('status_code')})"
         
         # 2. Análisis y Traducción (Simplificado para el Mundial)
         raw_text = ""
-        ocr_error = None
         if isinstance(ocr_result, list) and ocr_result:
             raw_text = ocr_result[0].get("generated_text", "")
         elif isinstance(ocr_result, dict):
