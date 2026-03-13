@@ -3,7 +3,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Star } from 'lucide-react';
-import { LanguageSelector } from '@/components/LanguageSelector';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -93,17 +92,11 @@ export default function Home() {
             2026 WC
           </span>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[var(--muted)] font-medium">Nivela la cancha digital y apoya lo local.</p>
-          <LanguageSelector />
-        </div>
+        <p className="text-[var(--muted)] font-medium">Nivela la cancha digital y apoya lo local.</p>
       </header>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-bold flex items-center justify-between">
-          {t('discover')}
-          <span className="text-[var(--primary)] text-sm font-medium">Ver todo</span>
-        </h2>
+        <h2 className="text-xl font-bold">{t('discover')}</h2>
         
         <div className="grid grid-cols-1 gap-4">
           {loading ? (
