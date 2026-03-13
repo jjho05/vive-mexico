@@ -40,25 +40,20 @@ class VisionService:
         ocr_result = await self.call_hf_api(self.ocr_api_url, file_content, is_image=True)
         
         # 2. Análisis y Traducción (Simplificado para el Mundial)
-        # Si la API falla o no hay token, usamos un fallback estructurado
-        raw_text = ocr_result[0].get("generated_text", "") if ocr_result and isinstance(ocr_result, list) else "Tacos al Pastor $50"
+        raw_text = ocr_result[0].get("generated_text", "") if ocr_result and isinstance(ocr_result, list) else ""
         
         # 3. Traducción Cultural (Simulada para mantener el flujo pero preparada para NLLB-200)
         # En una versión full, enviaríamos el 'raw_text' a self.translate_api_url
         
-        # Mock de items procesados (simulando parsing del texto extraído)
-        # En el futuro esto se haría con una pasada de LLM (ej. Gemma)
-        items = [
-            {"name": "Tacos al Pastor", "price_mxn": 50.0},
-            {"name": "Agua de Horchata", "price_mxn": 30.0}
-        ]
+        # Mock parsing placeholder removido: si no hay OCR, regresamos lista vacía
+        items = []
         
         processed_items = []
         for item in items:
             converted_price = await currency_service.convert(item["price_mxn"], target_currency)
             processed_items.append({
                 "original": item["name"],
-                "translated": f"{item['name']} - Local Specialty", # Placeholder de traducción
+                "translated": item["name"],
                 "price_mxn": item["price_mxn"],
                 "price_target": converted_price,
                 "currency": target_currency
@@ -66,8 +61,10 @@ class VisionService:
             
         return {
             "items": processed_items,
-            "status": "success" if self.hf_token else "mock_success",
-            "info": "Procesado con Hugging Face Inference API" if self.hf_token else "Modo de demostración (Token faltante)"
+            "target_lang": target_lang,
+            "target_currency": target_currency,
+            "status": "success" if self.hf_token else "no_data",
+            "info": "Procesado con Hugging Face Inference API" if self.hf_token else "Token faltante o sin OCR"
         }
 
 vision_service = VisionService()

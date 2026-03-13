@@ -126,14 +126,10 @@ export default function MerchantDashboard() {
             <span className="text-sm font-bold">Subir foto del menú</span>
           </div>
 
-          <div className="pt-4 space-y-2">
-             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                <span className="font-bold">Tacos al Pastor</span>
-                <span className="text-[var(--primary)] font-bold">$50.00 MXN</span>
-             </div>
-             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl text-gray-400 italic">
-                <span>+ Agregar platillo manualmente</span>
-             </div>
+          <div className="pt-4">
+            <div className="p-4 bg-gray-50 rounded-xl text-gray-500 text-sm">
+              Aún no hay platillos cargados.
+            </div>
           </div>
 
           <button className="w-full border-2 border-[var(--primary)] text-[var(--primary)] font-bold py-4 rounded-xl active:scale-95 transition-transform">

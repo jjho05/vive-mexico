@@ -8,22 +8,9 @@ export default function Home() {
   const { t } = useTranslation();
   const [businesses, setBusinesses] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [role, setRole] = React.useState<string | null>("loading");
+  const [role, setRole] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    try {
-      const savedRole = localStorage.getItem('ola-mexico-role');
-      if (savedRole === 'merchant') {
-        window.location.href = '/merchant';
-      } else if (savedRole === 'tourist') {
-        setRole(savedRole);
-      } else {
-        setRole(null);
-      }
-    } catch (e) {
-      setRole(null);
-    }
-
     const fetchBusinesses = async () => {
       try {
         const response = await fetch("/api/businesses");
@@ -37,8 +24,6 @@ export default function Home() {
     };
     fetchBusinesses();
   }, []);
-
-  if (role === "loading") return null;
 
   if (role === null) {
     return (
