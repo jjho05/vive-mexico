@@ -17,6 +17,8 @@ export default function ProfilePage() {
   const [locationStatus, setLocationStatus] = React.useState<string | null>(null);
   const [touristId, setTouristId] = React.useState<number | null>(null);
   const [role, setRole] = React.useState<string>('tourist');
+  const [merchantName, setMerchantName] = React.useState<string | null>(null);
+  const [touristDisplayName, setTouristDisplayName] = React.useState<string | null>(null);
   const { t } = useTranslation();
 
   React.useEffect(() => {
@@ -37,6 +39,27 @@ export default function ProfilePage() {
     setRole(session.role);
     if (session.tourist_id) {
       setTouristId(session.tourist_id);
+    }
+
+    if (session.role === 'merchant') {
+      const merchantId = session.merchant_id || localStorage.getItem('ola-merchant-id');
+      if (merchantId) {
+        fetch(`/api/merchants/${merchantId}`)
+          .then((r) => r.json())
+          .then((data) => {
+            if (data?.name) setMerchantName(data.name);
+          })
+          .catch(() => {});
+      }
+    }
+
+    if (session.role === 'tourist' && session.tourist_id) {
+      fetch(`/api/tourists/${session.tourist_id}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.name) setTouristDisplayName(data.name);
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -130,7 +153,9 @@ export default function ProfilePage() {
             <h2 className="text-xl font-black tracking-tight">
               {role === 'merchant' ? t('role_merchant') : t('role_tourist')}
             </h2>
-            <p className="text-sm font-medium text-[var(--muted)]">{t('role_section')}</p>
+            <p className="text-sm font-medium text-[var(--muted)]">
+              {role === 'merchant' ? (merchantName || t('role_section')) : (touristDisplayName || t('role_section'))}
+            </p>
           </div>
         </div>
       </div>

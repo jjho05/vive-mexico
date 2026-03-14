@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Star } from 'lucide-react';
+import { MapPin, Star, Map } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 
 export default function Home() {
@@ -210,6 +210,21 @@ export default function Home() {
                       <Star size={14} fill="currentColor" />
                       <span className="text-sm font-black">{biz.rating}</span>
                     </div>
+                  </div>
+                  <div className="mt-4">
+                    <a
+                      className="inline-flex items-center gap-2 text-sm font-bold text-[var(--primary)]"
+                      href={
+                        biz.lat && biz.lng
+                          ? `https://www.google.com/maps/search/?api=1&query=${biz.lat},${biz.lng}`
+                          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(biz.address || biz.name)}`
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Map size={16} />
+                      {t('view_map')}
+                    </a>
                   </div>
                 </div>
               </div>
