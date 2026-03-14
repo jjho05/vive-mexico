@@ -267,6 +267,7 @@ async def create_merchant_business(merchant_id: str, business: Business):
             return {"message": "Local creado", "data": res.data}
     except Exception as e:
         print(f"Create Merchant Business Error: {e}")
+        return JSONResponse({"message": "No se pudo crear", "detail": str(e)}, status_code=500)
     return JSONResponse({"message": "No se pudo crear", "detail": "unknown"}, status_code=500)
 
 @app.put("/api/merchants/{merchant_id}/businesses/{business_id}")
