@@ -264,13 +264,14 @@ export default function MerchantDashboard() {
                   </div>
                 )}
               </div>
-              {lat && lng && (
+              {lat !== null && lng !== null && (
                 <div className="rounded-2xl border border-gray-200 overflow-hidden">
                   <img
                     src={`https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=600x240&markers=${lat},${lng},red-pushpin`}
                     alt="Mapa"
                     className="w-full h-48 object-cover"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
                   />
                   <div className="p-3 flex items-center justify-between text-xs text-gray-500">
                     <span>{t('selected_location')}</span>
