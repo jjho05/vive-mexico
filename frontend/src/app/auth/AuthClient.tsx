@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { setSession } from '@/lib/auth';
 
-const BUILD_SHA = '5d35d9c';
+const BUILD_SHA = 'auth-v2';
 
 export default function AuthClient() {
   const params = useSearchParams();
@@ -88,21 +88,21 @@ export default function AuthClient() {
   return (
     <div className="min-h-[70vh] w-full max-w-md mx-auto flex flex-col gap-6 justify-center">
       <header className="text-center relative">
-        <h1 className="text-3xl font-black italic tracking-tighter">
+        <div className="inline-flex items-center gap-2 bg-[var(--primary)]/10 text-[var(--primary)] text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+          Actualizado {BUILD_SHA}
+        </div>
+        <h1 className="text-3xl font-black italic tracking-tighter mt-3">
           OLA <span className="text-[var(--primary)]">MÉXICO</span>
         </h1>
         <p className="text-[var(--muted)] font-medium mt-2">{t('auth_title')}</p>
-        <span className="absolute right-0 -top-3 text-[10px] uppercase tracking-widest text-gray-400 font-bold">
-          Build {BUILD_SHA}
-        </span>
       </header>
 
       <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-5">
         <div className="flex flex-col gap-2">
-          <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">1. Elige tu perfil</p>
+          <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">Paso 1 · Elige tu perfil</p>
           <div className="flex gap-2">
-          <button
-            className={`flex-1 py-2 rounded-xl text-sm font-bold ${role === 'tourist' ? 'bg-[var(--primary)] text-white' : 'bg-gray-100 text-gray-600'}`}
+            <button
+              className={`flex-1 py-2 rounded-xl text-sm font-bold ${role === 'tourist' ? 'bg-[var(--primary)] text-white' : 'bg-gray-100 text-gray-600'}`}
             onClick={() => setRole('tourist')}
           >
             {t('role_tourist')}
@@ -117,10 +117,10 @@ export default function AuthClient() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">2. ¿Ya tienes cuenta?</p>
+          <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">Paso 2 · Elige acción</p>
           <div className="flex gap-2">
-          <button
-            className={`flex-1 py-2 rounded-xl text-sm font-bold ${mode === 'login' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}
+            <button
+              className={`flex-1 py-2 rounded-xl text-sm font-bold ${mode === 'login' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}
             onClick={() => setMode('login')}
           >
             {t('auth_login')}
