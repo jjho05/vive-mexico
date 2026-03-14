@@ -242,6 +242,9 @@ async def get_merchant_businesses(merchant_id: str):
     try:
         if supabase is not None:
             res = supabase.table("businesses").select("*").eq("merchant_id", merchant_id).execute()
+            res_error = get_response_error(res)
+            if res_error:
+                return JSONResponse({"message": "No se pudo cargar locales", "detail": res_error}, status_code=500)
             return res.data
     except Exception as e:
         print(f"Get Merchant Businesses Error: {e}")
@@ -258,10 +261,13 @@ async def create_merchant_business(merchant_id: str, business: Business):
                 data["lat"], data["lng"] = coords
         if supabase is not None:
             res = supabase.table("businesses").insert(data).execute()
+            res_error = get_response_error(res)
+            if res_error:
+                return JSONResponse({"message": "No se pudo crear local", "detail": res_error}, status_code=500)
             return {"message": "Local creado", "data": res.data}
     except Exception as e:
         print(f"Create Merchant Business Error: {e}")
-    return {"message": "No se pudo crear"}
+    return JSONResponse({"message": "No se pudo crear", "detail": "unknown"}, status_code=500)
 
 @app.put("/api/merchants/{merchant_id}/businesses/{business_id}")
 async def update_merchant_business(merchant_id: str, business_id: int, business: Business):
@@ -275,10 +281,13 @@ async def update_merchant_business(merchant_id: str, business_id: int, business:
                 data["lat"], data["lng"] = coords
         if supabase is not None:
             res = supabase.table("businesses").update(data).eq("id", business_id).execute()
+            res_error = get_response_error(res)
+            if res_error:
+                return JSONResponse({"message": "No se pudo actualizar local", "detail": res_error}, status_code=500)
             return {"message": "Local actualizado", "data": res.data}
     except Exception as e:
         print(f"Update Merchant Business Error: {e}")
-    return {"message": "No se pudo actualizar"}
+    return JSONResponse({"message": "No se pudo actualizar", "detail": "unknown"}, status_code=500)
 
 @app.get("/api/recommendations")
 async def get_recommendations(interests: Optional[str] = None):

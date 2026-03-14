@@ -26,6 +26,7 @@ export default function MerchantDashboard() {
   const [lng, setLng] = React.useState<number | null>(null);
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([]);
   const [businesses, setBusinesses] = React.useState<any[]>([]);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const session = getSession();
@@ -70,7 +71,15 @@ export default function MerchantDashboard() {
   const fetchBusinesses = async (id: string) => {
     try {
       const resp = await fetch(`/api/merchants/${id}/businesses`);
-      const data = await resp.json();
+      const raw = await resp.text();
+      let data: any = null;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch {}
+      if (!resp.ok) {
+        setErrorMsg(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo cargar locales');
+        return;
+      }
       setBusinesses(Array.isArray(data) ? data : []);
     } catch {}
   };
@@ -113,6 +122,7 @@ export default function MerchantDashboard() {
   const saveBusiness = async () => {
     if (!merchantId) return;
     setLoading(true);
+    setErrorMsg(null);
     try {
       const payload = {
         name: businessName,
@@ -129,11 +139,20 @@ export default function MerchantDashboard() {
         ? `/api/merchants/${merchantId}/businesses/${businessId}`
         : `/api/merchants/${merchantId}/businesses`;
       const method = businessId ? 'PUT' : 'POST';
-      await fetch(url, {
+      const resp = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      const raw = await resp.text();
+      let data: any = null;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch {}
+      if (!resp.ok) {
+        setErrorMsg(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo guardar');
+        return;
+      }
       setBusinessId(null);
       setBusinessName('');
       setCategory('Comida y Bebida');
@@ -194,6 +213,7 @@ export default function MerchantDashboard() {
         <>
           <section className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-4">
             <h2 className="text-xl font-bold">Agregar / editar local</h2>
+            {errorMsg ? <p className="text-sm text-red-600">{errorMsg}</p> : null}
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">{t('merchant_business_name')}</label>
