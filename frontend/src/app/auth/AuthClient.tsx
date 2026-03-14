@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { setSession } from '@/lib/auth';
 
+const BUILD_SHA = '5d35d9c';
+
 export default function AuthClient() {
   const params = useSearchParams();
   const { t } = useTranslation();
@@ -85,11 +87,14 @@ export default function AuthClient() {
 
   return (
     <div className="min-h-[70vh] w-full max-w-md mx-auto flex flex-col gap-6 justify-center">
-      <header className="text-center">
+      <header className="text-center relative">
         <h1 className="text-3xl font-black italic tracking-tighter">
           OLA <span className="text-[var(--primary)]">MÉXICO</span>
         </h1>
         <p className="text-[var(--muted)] font-medium mt-2">{t('auth_title')}</p>
+        <span className="absolute right-0 -top-3 text-[10px] uppercase tracking-widest text-gray-400 font-bold">
+          Build {BUILD_SHA}
+        </span>
       </header>
 
       <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-5">
