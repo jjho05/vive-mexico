@@ -25,6 +25,15 @@ export default function ProfilePage() {
   const [touristDisplayName, setTouristDisplayName] = React.useState<string | null>(null);
   const { t } = useTranslation();
 
+  const mapEmbedSrc = (latVal: number, lngVal: number) => {
+    const delta = 0.003;
+    const left = lngVal - delta;
+    const right = lngVal + delta;
+    const bottom = latVal - delta;
+    const top = latVal + delta;
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik&marker=${latVal}%2C${lngVal}`;
+  };
+
   React.useEffect(() => {
     const session = getSession();
     if (!session) {
@@ -280,12 +289,11 @@ export default function ProfilePage() {
             </div>
             {touristLat !== null && touristLng !== null && (
               <div className="rounded-2xl border border-gray-200 overflow-hidden">
-                <img
-                  src={`https://staticmap.openstreetmap.de/staticmap.php?center=${touristLat},${touristLng}&zoom=16&size=600x240&markers=${touristLat},${touristLng},red-pushpin`}
-                  alt="Mapa"
-                  className="w-full h-40 object-cover"
+                <iframe
+                  title="Mapa"
+                  src={mapEmbedSrc(touristLat, touristLng)}
+                  className="w-full h-40"
                   loading="lazy"
-                  referrerPolicy="no-referrer"
                 />
                 <div className="p-3 flex items-center justify-between text-xs text-gray-500">
                   <span>{t('selected_location')}</span>

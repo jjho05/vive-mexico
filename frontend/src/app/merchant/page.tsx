@@ -28,6 +28,15 @@ export default function MerchantDashboard() {
   const [businesses, setBusinesses] = React.useState<any[]>([]);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
+  const mapEmbedSrc = (latVal: number, lngVal: number) => {
+    const delta = 0.003;
+    const left = lngVal - delta;
+    const right = lngVal + delta;
+    const bottom = latVal - delta;
+    const top = latVal + delta;
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${left}%2C${bottom}%2C${right}%2C${top}&layer=mapnik&marker=${latVal}%2C${lngVal}`;
+  };
+
   React.useEffect(() => {
     const session = getSession();
     if (!session || session.role !== 'merchant') {
@@ -266,12 +275,11 @@ export default function MerchantDashboard() {
               </div>
               {lat !== null && lng !== null && (
                 <div className="rounded-2xl border border-gray-200 overflow-hidden">
-                  <img
-                    src={`https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=600x240&markers=${lat},${lng},red-pushpin`}
-                    alt="Mapa"
-                    className="w-full h-48 object-cover"
+                  <iframe
+                    title="Mapa"
+                    src={mapEmbedSrc(lat, lng)}
+                    className="w-full h-48"
                     loading="lazy"
-                    referrerPolicy="no-referrer"
                   />
                   <div className="p-3 flex items-center justify-between text-xs text-gray-500">
                     <span>{t('selected_location')}</span>
@@ -286,9 +294,12 @@ export default function MerchantDashboard() {
                   </div>
                 </div>
               )}
+              {lat === null || lng === null ? (
+                <p className="text-xs text-gray-500">{t('select_suggestion')}</p>
+              ) : null}
               <button
                 onClick={saveBusiness}
-                disabled={loading || !businessName || !address}
+                disabled={loading || !businessName || !address || lat === null || lng === null}
                 className={`w-full ${loading ? 'opacity-50' : 'bg-[var(--primary)]'} text-white font-bold py-4 rounded-xl shadow-lg shadow-[var(--primary)]/20 active:scale-95 transition-transform`}
               >
                 {loading ? t('merchant_processing') : 'Guardar local'}
