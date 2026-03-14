@@ -65,6 +65,15 @@ def verify_password(password: str, password_hash: str) -> bool:
     except Exception:
         return False
 
+def get_response_error(resp) -> Optional[str]:
+    err = getattr(resp, "error", None)
+    if not err:
+        return None
+    try:
+        return getattr(err, "message", None) or str(err)
+    except Exception:
+        return str(err)
+
 @app.get("/api/businesses")
 async def get_businesses():
     try:
@@ -86,6 +95,9 @@ async def register_account(payload: AuthRegister):
         return JSONResponse({"message": "Rol inválido"}, status_code=400)
     try:
         existing = supabase.table("accounts").select("id").eq("email", payload.email).execute()
+        existing_error = get_response_error(existing)
+        if existing_error:
+            return JSONResponse({"message": "Error consultando cuentas", "detail": existing_error}, status_code=500)
         if existing.data:
             return JSONResponse({"message": "Email ya registrado"}, status_code=409)
 
@@ -101,7 +113,10 @@ async def register_account(payload: AuthRegister):
                 "phone": payload.phone,
                 "email": payload.email,
             }
-            supabase.table("merchants").insert(merchant_data).execute()
+            merchant_res = supabase.table("merchants").insert(merchant_data).execute()
+            merchant_error = get_response_error(merchant_res)
+            if merchant_error:
+                return JSONResponse({"message": "No se pudo crear comerciante", "detail": merchant_error}, status_code=500)
         else:
             tourist_data = {
                 "name": payload.name or "Turista",
@@ -110,6 +125,9 @@ async def register_account(payload: AuthRegister):
                 "preferred_currency": payload.preferred_currency,
             }
             tourist_res = supabase.table("tourists").insert(tourist_data).execute()
+            tourist_error = get_response_error(tourist_res)
+            if tourist_error:
+                return JSONResponse({"message": "No se pudo crear turista", "detail": tourist_error}, status_code=500)
             if tourist_res.data:
                 tourist_id = tourist_res.data[0].get("id")
 
@@ -122,10 +140,13 @@ async def register_account(payload: AuthRegister):
             "tourist_id": tourist_id,
         }
         res = supabase.table("accounts").insert(account_data).execute()
+        account_error = get_response_error(res)
+        if account_error:
+            return JSONResponse({"message": "No se pudo crear cuenta", "detail": account_error}, status_code=500)
         return {"message": "Cuenta creada", "account": res.data[0] if res.data else account_data}
     except Exception as e:
         print(f"Register Account Error: {e}")
-        return JSONResponse({"message": "No se pudo registrar"}, status_code=500)
+        return JSONResponse({"message": "No se pudo registrar", "detail": str(e)}, status_code=500)
 
 @app.post("/api/auth/login")
 async def login_account(payload: AuthLogin):
@@ -133,6 +154,9 @@ async def login_account(payload: AuthLogin):
         return JSONResponse({"message": "Supabase no configurado"}, status_code=500)
     try:
         res = supabase.table("accounts").select("*").eq("email", payload.email).execute()
+        res_error = get_response_error(res)
+        if res_error:
+            return JSONResponse({"message": "Error consultando cuentas", "detail": res_error}, status_code=500)
         if not res.data:
             return JSONResponse({"message": "Credenciales inválidas"}, status_code=401)
         account = res.data[0]

@@ -44,7 +44,8 @@ export default function AuthClient() {
       });
       const data = await resp.json();
       if (!resp.ok) {
-        setError(data?.message || t('auth_error'));
+        const detail = data?.detail ? ` (${data.detail})` : '';
+        setError(`${data?.message || t('auth_error')}${detail}`);
         return;
       }
       const account = data?.account;
