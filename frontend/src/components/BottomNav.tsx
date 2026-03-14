@@ -4,24 +4,12 @@ import Link from 'next/link';
 import { Home, ScanLine, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { getSession } from '@/lib/auth';
 import React from 'react';
 
 const BottomNav = () => {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const [hasSession, setHasSession] = React.useState(false);
-  
   const isActive = (path: string) => pathname === path;
-
-  React.useEffect(() => {
-    const session = getSession();
-    setHasSession(!!session);
-  }, []);
-
-  if (!hasSession || pathname.startsWith('/auth')) {
-    return null;
-  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-20 bg-[var(--glass)] backdrop-blur-xl border-t border-[var(--primary)]/10 z-50 flex items-center justify-around px-4 pb-4">

@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { setSession } from '@/lib/auth';
 
-const BUILD_SHA = 'auth-v2';
+const BUILD_SHA = 'auth-v3';
 
 export default function AuthClient() {
   const params = useSearchParams();
@@ -97,9 +97,10 @@ export default function AuthClient() {
         <p className="text-[var(--muted)] font-medium mt-2">{t('auth_title')}</p>
       </header>
 
-      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-5">
+      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-6">
         <div className="flex flex-col gap-2">
-          <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">Paso 1 · Elige tu perfil</p>
+          <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">Paso 1 · ¿Quién eres?</p>
+          <p className="text-sm text-gray-500">Selecciona el perfil para personalizar tu experiencia.</p>
           <div className="flex gap-2">
             <button
               className={`flex-1 py-2 rounded-xl text-sm font-bold ${role === 'tourist' ? 'bg-[var(--primary)] text-white' : 'bg-gray-100 text-gray-600'}`}
@@ -117,7 +118,8 @@ export default function AuthClient() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">Paso 2 · Elige acción</p>
+          <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">Paso 2 · Acceso</p>
+          <p className="text-sm text-gray-500">Si ya tienes cuenta, inicia sesión. Si no, regístrate.</p>
           <div className="flex gap-2">
             <button
               className={`flex-1 py-2 rounded-xl text-sm font-bold ${mode === 'login' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}
@@ -181,6 +183,15 @@ export default function AuthClient() {
         >
           {loading ? t('auth_processing') : mode === 'login' ? t('auth_login') : t('auth_register')}
         </button>
+
+        {mode === 'login' && (
+          <button
+            className="w-full text-sm text-gray-500 hover:text-gray-700"
+            onClick={() => setMode('register')}
+          >
+            ¿No tienes cuenta? Regístrate
+          </button>
+        )}
       </div>
     </div>
   );
