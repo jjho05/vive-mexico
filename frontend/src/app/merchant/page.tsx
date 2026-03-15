@@ -27,6 +27,13 @@ export default function MerchantDashboard() {
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([]);
   const [businesses, setBusinesses] = React.useState<any[]>([]);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [stripeStatus, setStripeStatus] = React.useState<any | null>(null);
+  const [stripeLoading, setStripeLoading] = React.useState(false);
+  const [payAmount, setPayAmount] = React.useState('');
+  const [payDescription, setPayDescription] = React.useState('');
+  const [checkoutUrl, setCheckoutUrl] = React.useState<string | null>(null);
+  const [feePreview, setFeePreview] = React.useState<{ amount: number; fee: number; total: number } | null>(null);
+  const [paymentError, setPaymentError] = React.useState<string | null>(null);
 
   const mapEmbedSrc = (latVal: number, lngVal: number) => {
     const delta = 0.003;
@@ -49,6 +56,7 @@ export default function MerchantDashboard() {
       localStorage.setItem('ola-merchant-id', stored);
       fetchBusinesses(stored);
       fetchMerchant(stored);
+      fetchStripeStatus(stored);
     }
   }, []);
 
@@ -99,6 +107,14 @@ export default function MerchantDashboard() {
       const data = await resp.json();
       if (data?.name) setMerchantName(data.name);
       if (data?.phone) setMerchantPhone(data.phone);
+    } catch {}
+  };
+
+  const fetchStripeStatus = async (id: string) => {
+    try {
+      const resp = await fetch(`/api/stripe/connect/status?merchant_id=${id}`);
+      const data = await resp.json();
+      setStripeStatus(data);
     } catch {}
   };
 
@@ -172,6 +188,61 @@ export default function MerchantDashboard() {
       fetchBusinesses(merchantId);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const connectStripe = async () => {
+    if (!merchantId) return;
+    setStripeLoading(true);
+    try {
+      const resp = await fetch('/api/stripe/connect/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ merchant_id: merchantId }),
+      });
+      const data = await resp.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        setPaymentError(data?.message || 'No se pudo conectar Stripe');
+      }
+    } finally {
+      setStripeLoading(false);
+    }
+  };
+
+  const createPaymentLink = async () => {
+    if (!merchantId) return;
+    setPaymentError(null);
+    setStripeLoading(true);
+    try {
+      const amount = Number(payAmount);
+      if (!amount || amount <= 0) {
+        setPaymentError('Monto inválido');
+        return;
+      }
+      const idempotencyKey = (globalThis.crypto && 'randomUUID' in globalThis.crypto)
+        ? globalThis.crypto.randomUUID()
+        : String(Date.now());
+      const resp = await fetch('/api/payments/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          merchant_id: merchantId,
+          amount_mxn: amount,
+          description: payDescription || 'Cobro Ola México',
+          idempotency_key: idempotencyKey,
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        setPaymentError(data?.message || 'No se pudo crear el cobro');
+        return;
+      }
+      setCheckoutUrl(data.checkout_url);
+      setFeePreview({ amount: data.amount_mxn, fee: data.fee_mxn, total: data.total_mxn });
+    } finally {
+      setStripeLoading(false);
     }
   };
 
@@ -305,6 +376,81 @@ export default function MerchantDashboard() {
                 {loading ? t('merchant_processing') : 'Guardar local'}
               </button>
             </div>
+          </section>
+
+          <section className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-4">
+            <h2 className="text-xl font-bold">Cobros con tarjeta</h2>
+            <p className="text-sm text-gray-500">
+              Genera un QR para que el turista pague con Apple Pay, Google Pay o tarjeta.
+            </p>
+            {stripeStatus?.connected ? (
+              <div className="text-xs text-green-600 font-bold">Stripe conectado</div>
+            ) : (
+              <button
+                onClick={connectStripe}
+                disabled={stripeLoading}
+                className={`w-full ${stripeLoading ? 'opacity-50' : 'bg-[var(--primary)]'} text-white font-bold py-3 rounded-xl`}
+              >
+                {stripeLoading ? 'Conectando…' : 'Conectar Stripe'}
+              </button>
+            )}
+
+            {stripeStatus?.connected ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    type="number"
+                    placeholder="Monto en MXN"
+                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[var(--primary)] outline-none"
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Descripción (opcional)"
+                    className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[var(--primary)] outline-none"
+                    value={payDescription}
+                    onChange={(e) => setPayDescription(e.target.value)}
+                  />
+                </div>
+
+                <button
+                  onClick={createPaymentLink}
+                  disabled={stripeLoading || !payAmount}
+                  className={`w-full ${stripeLoading ? 'opacity-50' : 'bg-black'} text-white font-bold py-3 rounded-xl`}
+                >
+                  {stripeLoading ? 'Generando…' : 'Generar QR de pago'}
+                </button>
+
+                {paymentError ? <p className="text-sm text-red-600">{paymentError}</p> : null}
+
+                {feePreview ? (
+                  <div className="text-sm text-gray-600">
+                    Monto: <span className="font-bold">${feePreview.amount} MXN</span> · Comisión:
+                    <span className="font-bold"> ${feePreview.fee} MXN</span> · Total:
+                    <span className="font-bold"> ${feePreview.total} MXN</span>
+                  </div>
+                ) : null}
+
+                {checkoutUrl ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(checkoutUrl)}`}
+                      alt="QR de pago"
+                      className="w-64 h-64"
+                    />
+                    <a
+                      href={checkoutUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-[var(--primary)] font-bold"
+                    >
+                      Abrir link de pago
+                    </a>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </section>
 
           <section className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-4">

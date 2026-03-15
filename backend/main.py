@@ -13,6 +13,13 @@ from backend.database.supabase_client import supabase
 from backend.database.models import Business, Tourist, Merchant, AuthRegister, AuthLogin
 from backend.services.geo_service import geo_service
 from backend.services.poi_service import poi_service
+from backend.services.stripe_service import (
+    compute_fee_mxn,
+    create_connect_account,
+    create_account_link,
+    create_checkout_session,
+    get_account_status,
+)
 app = FastAPI(title="Ola México API")
 
 app.include_router(vision_router)
@@ -390,6 +397,102 @@ async def get_poi_nearby(lat: float, lng: float, radius_km: float = 3.0, limit: 
         return results
     except Exception as e:
         return JSONResponse({"message": "No se pudieron cargar lugares", "detail": str(e)}, status_code=500)
+
+@app.post("/api/stripe/connect/create")
+async def stripe_connect_create(request: Request):
+    if supabase is None:
+        return JSONResponse({"message": "Supabase no configurado"}, status_code=500)
+    try:
+        payload = await request.json()
+        merchant_id = payload.get("merchant_id")
+        if not merchant_id:
+            return JSONResponse({"message": "merchant_id requerido"}, status_code=400)
+        res = supabase.table("merchants").select("*").eq("id", merchant_id).execute()
+        if not res.data:
+            return JSONResponse({"message": "Comerciante no encontrado"}, status_code=404)
+        merchant = res.data[0]
+        stripe_account_id = merchant.get("stripe_account_id")
+        if not stripe_account_id:
+            stripe_account_id = create_connect_account(
+                merchant.get("email"),
+                merchant.get("name"),
+                merchant.get("phone"),
+            )
+            supabase.table("merchants").update({"stripe_account_id": stripe_account_id}).eq("id", merchant_id).execute()
+        base = str(request.base_url).rstrip("/")
+        refresh_url = f"{base}/merchant?stripe=refresh"
+        return_url = f"{base}/merchant?stripe=success"
+        url = create_account_link(stripe_account_id, refresh_url, return_url)
+        return {"url": url, "stripe_account_id": stripe_account_id}
+    except Exception as e:
+        return JSONResponse({"message": "No se pudo iniciar Stripe", "detail": str(e)}, status_code=500)
+
+
+@app.get("/api/stripe/connect/status")
+async def stripe_connect_status(merchant_id: str):
+    if supabase is None:
+        return JSONResponse({"message": "Supabase no configurado"}, status_code=500)
+    try:
+        res = supabase.table("merchants").select("*").eq("id", merchant_id).execute()
+        if not res.data:
+            return JSONResponse({"message": "Comerciante no encontrado"}, status_code=404)
+        merchant = res.data[0]
+        stripe_account_id = merchant.get("stripe_account_id")
+        if not stripe_account_id:
+            return {"connected": False}
+        charges_enabled, payouts_enabled = get_account_status(stripe_account_id)
+        return {
+            "connected": True,
+            "stripe_account_id": stripe_account_id,
+            "charges_enabled": charges_enabled,
+            "payouts_enabled": payouts_enabled,
+        }
+    except Exception as e:
+        return JSONResponse({"message": "No se pudo obtener estado", "detail": str(e)}, status_code=500)
+
+
+@app.post("/api/payments/checkout")
+async def create_payment_checkout(request: Request):
+    if supabase is None:
+        return JSONResponse({"message": "Supabase no configurado"}, status_code=500)
+    try:
+        payload = await request.json()
+        merchant_id = payload.get("merchant_id")
+        amount_mxn = float(payload.get("amount_mxn", 0))
+        description = payload.get("description")
+        idempotency_key = payload.get("idempotency_key")
+        success_url = payload.get("success_url")
+        cancel_url = payload.get("cancel_url")
+        if not merchant_id or amount_mxn <= 0:
+            return JSONResponse({"message": "Datos inválidos"}, status_code=400)
+        res = supabase.table("merchants").select("*").eq("id", merchant_id).execute()
+        if not res.data:
+            return JSONResponse({"message": "Comerciante no encontrado"}, status_code=404)
+        merchant = res.data[0]
+        stripe_account_id = merchant.get("stripe_account_id")
+        if not stripe_account_id:
+            return JSONResponse({"message": "Comerciante sin Stripe"}, status_code=400)
+        fee_mxn = compute_fee_mxn(amount_mxn)
+        base = str(request.base_url).rstrip("/")
+        success = success_url or f"{base}/?payment=success"
+        cancel = cancel_url or f"{base}/?payment=cancel"
+        checkout_url = create_checkout_session(
+            amount_mxn=amount_mxn,
+            fee_mxn=fee_mxn,
+            destination_account=stripe_account_id,
+            success_url=success,
+            cancel_url=cancel,
+            idempotency_key=idempotency_key,
+            description=description,
+        )
+        return {
+            "checkout_url": checkout_url,
+            "amount_mxn": round(amount_mxn, 2),
+            "fee_mxn": round(fee_mxn, 2),
+            "total_mxn": round(amount_mxn + fee_mxn, 2),
+        }
+    except Exception as e:
+        return JSONResponse({"message": "No se pudo crear cobro", "detail": str(e)}, status_code=500)
 
 if os.path.exists(static_path):
     # Disable html=True so /scanner hits the 404 handler, where we can intercept RSC

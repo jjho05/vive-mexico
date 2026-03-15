@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS merchants (
     name TEXT NOT NULL,
     phone TEXT,
     email TEXT,
+    stripe_account_id TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

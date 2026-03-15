@@ -6,3 +6,4 @@ httpx
 supabase
 bcrypt
 python-multipart
+stripe
