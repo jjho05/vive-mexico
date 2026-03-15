@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -35,54 +34,85 @@ const iconUser = L.icon({
   shadowUrl: iconShadow,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 const iconBusiness = L.icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
   shadowUrl: iconShadow,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 const iconPoi = L.icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
   shadowUrl: iconShadow,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 
 export default function TouristCityMap({ center, userLocation, pois, businesses }: Props) {
+  const mapRef = React.useRef<HTMLDivElement | null>(null);
+  const mapInstance = React.useRef<L.Map | null>(null);
+  const markersLayer = React.useRef<L.LayerGroup | null>(null);
+
+  React.useEffect(() => {
+    if (!mapRef.current || mapInstance.current) return;
+    const map = L.map(mapRef.current, {
+      center,
+      zoom: 13,
+      scrollWheelZoom: true,
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+    mapInstance.current = map;
+    markersLayer.current = L.layerGroup().addTo(map);
+  }, []);
+
+  React.useEffect(() => {
+    if (!mapInstance.current || !markersLayer.current) return;
+    mapInstance.current.setView(center, 13);
+    markersLayer.current.clearLayers();
+
+    if (userLocation) {
+      L.marker(userLocation, { icon: iconUser })
+        .bindPopup('Tu ubicación')
+        .addTo(markersLayer.current);
+    }
+
+    businesses.forEach((biz) => {
+      L.marker([biz.lat, biz.lng], { icon: iconBusiness })
+        .bindPopup(
+          `<strong>${biz.name}</strong>${biz.address ? `<br/><span>${biz.address}</span>` : ''}`
+        )
+        .addTo(markersLayer.current);
+    });
+
+    pois.forEach((poi) => {
+      L.marker([poi.lat, poi.lng], { icon: iconPoi })
+        .bindPopup(
+          `<strong>${poi.title}</strong>${poi.url ? `<br/><a href="${poi.url}" target="_blank" rel="noreferrer">Wikipedia</a>` : ''}`
+        )
+        .addTo(markersLayer.current);
+    });
+  }, [center, userLocation, pois, businesses]);
+
+  React.useEffect(() => {
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+    };
+  }, []);
+
   return (
     <div className="rounded-3xl overflow-hidden border border-gray-200 shadow-sm">
-      <MapContainer center={center} zoom={13} scrollWheelZoom className="h-80 w-full">
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {userLocation ? (
-          <Marker position={userLocation} icon={iconUser}>
-            <Popup>Tu ubicación</Popup>
-          </Marker>
-        ) : null}
-        {businesses.map((biz) => (
-          <Marker key={`biz-${biz.id}`} position={[biz.lat, biz.lng]} icon={iconBusiness}>
-            <Popup>
-              <div className="text-sm font-bold">{biz.name}</div>
-              {biz.address ? <div className="text-xs text-gray-500">{biz.address}</div> : null}
-            </Popup>
-          </Marker>
-        ))}
-        {pois.map((poi) => (
-          <Marker key={`poi-${poi.id ?? poi.title}`} position={[poi.lat, poi.lng]} icon={iconPoi}>
-            <Popup>
-              <div className="text-sm font-bold">{poi.title}</div>
-              {poi.url ? (
-                <a className="text-xs text-blue-600" href={poi.url} target="_blank" rel="noreferrer">
-                  Wikipedia
-                </a>
-              ) : null}
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      <div ref={mapRef} className="h-80 w-full" />
     </div>
   );
 }
