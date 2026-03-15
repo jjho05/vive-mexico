@@ -194,13 +194,22 @@ export default function MerchantDashboard() {
   const connectStripe = async () => {
     if (!merchantId) return;
     setStripeLoading(true);
+    setPaymentError(null);
     try {
       const resp = await fetch('/api/stripe/connect/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ merchant_id: merchantId }),
       });
-      const data = await resp.json();
+      const raw = await resp.text();
+      let data: any = null;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch {}
+      if (!resp.ok) {
+        setPaymentError(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo conectar Stripe');
+        return;
+      }
       if (data?.url) {
         window.location.href = data.url;
       } else {
