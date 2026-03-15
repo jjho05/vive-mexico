@@ -132,9 +132,14 @@ export default function Home() {
     return list;
   }, [nearbyBusinesses, likedCategories]);
 
-  const routePoints = React.useMemo(() => {
+  const routePoints = React.useMemo<[number, number][]>(() => {
     if (!touristLocation || routeStops.length === 0) return [];
-    return [touristLocation, ...routeStops.map((b: any) => [b.lat, b.lng])];
+    return [
+      touristLocation,
+      ...routeStops
+        .map((b: any) => [Number(b.lat), Number(b.lng)] as [number, number])
+        .filter((p) => Number.isFinite(p[0]) && Number.isFinite(p[1])),
+    ];
   }, [touristLocation, routeStops]);
 
   React.useEffect(() => {
