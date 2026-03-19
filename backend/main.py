@@ -622,6 +622,29 @@ async def create_payment_checkout(request: Request):
     except Exception as e:
         return JSONResponse({"message": "No se pudo crear cobro", "detail": str(e)}, status_code=500)
 
+@app.post("/api/businesses/{business_id}/reviews")
+async def create_review(business_id: int, review: Review):
+    if supabase is not None:
+        data = review.dict()
+        data["business_id"] = business_id
+        try:
+            res = supabase.table("reviews").insert(data).execute()
+            return res.data
+        except Exception as e:
+            return {"error": str(e)}
+    return {"message": "Mock review created"}
+
+@app.get("/api/businesses/{business_id}/reviews")
+async def get_reviews(business_id: int):
+    if supabase is not None:
+        try:
+            res = supabase.table("reviews").select("*").eq("business_id", business_id).execute()
+            if res.data:
+                return res.data
+        except:
+            pass
+    return []
+
 if os.path.exists(static_path):
     # Disable html=True so /scanner hits the 404 handler, where we can intercept RSC
     app.mount("/_next", StaticFiles(directory=os.path.join(static_path, "_next")), name="next_static")

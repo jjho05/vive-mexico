@@ -48,3 +48,11 @@ class AuthRegister(BaseModel):
 class AuthLogin(BaseModel):
     email: str
     password: str
+
+class Review(BaseModel):
+    id: Optional[int] = None
+    business_id: int
+    tourist_id: str
+    rating: int
+    comment: Optional[str] = None
+    created_at: Optional[str] = None

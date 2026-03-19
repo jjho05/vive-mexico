@@ -6,6 +6,7 @@ import { MapPin, Star, Map } from 'lucide-react';
 import { getAuthHeaders, getSession } from '@/lib/auth';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
+import ReviewModal from '@/components/ReviewModal';
 
 const TouristCityMap = dynamic(() => import('@/components/TouristCityMap'), { ssr: false });
 
@@ -25,6 +26,7 @@ export default function Home() {
   const [mapLoading, setMapLoading] = React.useState(false);
   const [mapError, setMapError] = React.useState<string | null>(null);
   const [likedCategories, setLikedCategories] = React.useState<string[]>([]);
+  const [reviewModalBz, setReviewModalBz] = React.useState<{id: number, name: string} | null>(null);
 
   React.useEffect(() => {
     try {
@@ -511,9 +513,9 @@ export default function Home() {
                       <span className="text-sm font-black">{biz.rating}</span>
                     </div>
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     <a
-                      className="inline-flex items-center gap-2 text-sm font-bold text-[var(--primary)]"
+                      className="inline-flex items-center gap-2 text-sm font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-3 py-1.5 rounded-lg hover:bg-[var(--primary)]/20 transition-colors"
                       href={
                         biz.lat && biz.lng
                           ? `https://www.google.com/maps/search/?api=1&query=${biz.lat},${biz.lng}`
@@ -525,6 +527,12 @@ export default function Home() {
                       <Map size={16} />
                       {t('view_map')}
                     </a>
+                    <button
+                      onClick={() => setReviewModalBz({id: biz.id, name: biz.name})}
+                      className="inline-flex items-center gap-2 text-sm font-bold text-yellow-600 bg-yellow-50 px-3 py-1.5 rounded-lg hover:bg-yellow-100 transition-colors"
+                    >
+                      <Star size={16} fill="currentColor" /> {t('reviews') || 'Reseñas'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -532,6 +540,15 @@ export default function Home() {
           )}
         </div>
       </section>
+      
+      {reviewModalBz && (
+        <ReviewModal
+          businessId={reviewModalBz.id}
+          businessName={reviewModalBz.name}
+          isOpen={true}
+          onClose={() => setReviewModalBz(null)}
+        />
+      )}
     </div>
   );
 }
