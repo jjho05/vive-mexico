@@ -21,7 +21,7 @@ def create_connect_account(email: Optional[str], name: Optional[str], phone: Opt
         email=email,
         business_type="individual",
         business_profile={
-            "product_description": "Cobros de Ola México",
+            "product_description": "Cobros de Vive México",
         },
         individual={
             "first_name": (name or "Comerciante").split(" ")[0],
@@ -71,7 +71,7 @@ def create_checkout_session(
             {
                 "price_data": {
                     "currency": "mxn",
-                    "product_data": {"name": description or "Cobro Ola México"},
+                    "product_data": {"name": description or "Cobro Vive México"},
                     "unit_amount": unit_amount,
                 },
                 "quantity": 1,

@@ -17,7 +17,7 @@ class GeoService:
             "limit": 1,
         }
         headers = {
-            "User-Agent": "ola-mexico/1.0 (contact: local-dev)"
+            "User-Agent": "vive-mexico/1.0 (contact: local-dev)"
         }
         async with httpx.AsyncClient(timeout=15) as client:
             resp = await client.get(self.nominatim_url, params=params, headers=headers)
