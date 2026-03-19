@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MapPin, Star, Map } from 'lucide-react';
 import { getAuthHeaders, getSession } from '@/lib/auth';
 import dynamic from 'next/dynamic';
+import { toast } from 'sonner';
 
 const TouristCityMap = dynamic(() => import('@/components/TouristCityMap'), { ssr: false });
 
@@ -187,10 +188,15 @@ export default function Home() {
         params.set('lng', String(lng));
       }
       const response = await fetch(`/api/businesses/search?${params.toString()}`);
+      if (!response.ok) throw new Error('Search failed');
       const data = await response.json();
       setBusinesses(Array.isArray(data) ? data : []);
+      if (Array.isArray(data) && data.length === 0) {
+        toast.info("No se encontraron locales con ese nombre.");
+      }
     } catch (e) {
       console.error(e);
+      toast.error("Ocurrió un error al buscar.");
     } finally {
       setSearching(false);
     }
@@ -331,7 +337,10 @@ export default function Home() {
           )}
 
           {mapLoading ? (
-            <div className="text-sm text-gray-500">{t('tourist_map_loading')}</div>
+            <div className="flex items-center gap-2 text-sm text-[var(--primary)] font-bold my-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--primary)]"></div>
+              {t('tourist_map_loading')}
+            </div>
           ) : null}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -436,9 +445,21 @@ export default function Home() {
         
         <div className="grid grid-cols-1 gap-4">
           {loading || searching ? (
-            <div className="flex justify-center py-10">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
-            </div>
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={`skeleton-${i}`} className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 animate-pulse">
+                <div className="h-48 w-full bg-gray-200" />
+                <div className="p-5 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2 w-3/4">
+                      <div className="h-6 bg-gray-200 rounded-lg w-full" />
+                      <div className="h-4 bg-gray-200 rounded-lg w-1/2" />
+                    </div>
+                    <div className="h-6 w-12 bg-gray-200 rounded-xl" />
+                  </div>
+                  <div className="h-4 bg-gray-200 rounded-lg w-1/4 mt-2" />
+                </div>
+              </div>
+            ))
           ) : (
             businesses.map((biz) => (
               <div key={biz.id} className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 transition-transform active:scale-[0.98]">

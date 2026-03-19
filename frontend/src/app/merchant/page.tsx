@@ -4,6 +4,7 @@ import React from 'react';
 import { Store, Save, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getAuthHeaders, getSession } from '@/lib/auth';
+import { toast } from 'sonner';
 
 type Suggestion = {
   display_name: string;
@@ -26,14 +27,12 @@ export default function MerchantDashboard() {
   const [lng, setLng] = React.useState<number | null>(null);
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([]);
   const [businesses, setBusinesses] = React.useState<any[]>([]);
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [stripeStatus, setStripeStatus] = React.useState<any | null>(null);
   const [stripeLoading, setStripeLoading] = React.useState(false);
   const [payAmount, setPayAmount] = React.useState('');
   const [payDescription, setPayDescription] = React.useState('');
   const [checkoutUrl, setCheckoutUrl] = React.useState<string | null>(null);
   const [feePreview, setFeePreview] = React.useState<{ amount: number; fee: number; total: number } | null>(null);
-  const [paymentError, setPaymentError] = React.useState<string | null>(null);
   const payAmountNumber = Number(payAmount);
   const canCharge = !!stripeStatus?.connected && !!stripeStatus?.charges_enabled;
 
@@ -99,7 +98,7 @@ export default function MerchantDashboard() {
         data = raw ? JSON.parse(raw) : null;
       } catch {}
       if (!resp.ok) {
-        setErrorMsg(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo cargar locales');
+        toast.error(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo cargar locales');
         return;
       }
       setBusinesses(Array.isArray(data) ? data : []);
@@ -161,7 +160,6 @@ export default function MerchantDashboard() {
   const saveBusiness = async () => {
     if (!merchantId) return;
     setLoading(true);
-    setErrorMsg(null);
     try {
       const payload = {
         name: businessName,
@@ -192,9 +190,10 @@ export default function MerchantDashboard() {
         data = raw ? JSON.parse(raw) : null;
       } catch {}
       if (!resp.ok) {
-        setErrorMsg(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo guardar');
+        toast.error(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo guardar');
         return;
       }
+      toast.success('Local guardado correctamente');
       setBusinessId(null);
       setBusinessName('');
       setCategory('Comida y Bebida');
@@ -211,7 +210,6 @@ export default function MerchantDashboard() {
   const connectStripe = async () => {
     if (!merchantId) return;
     setStripeLoading(true);
-    setPaymentError(null);
     try {
       const authHeaders = getAuthHeaders();
       const resp = await fetch('/api/stripe/connect/create', {
@@ -227,13 +225,13 @@ export default function MerchantDashboard() {
         data = raw ? JSON.parse(raw) : null;
       } catch {}
       if (!resp.ok) {
-        setPaymentError(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo conectar Stripe');
+        toast.error(data?.message ? `${data.message}${data?.detail ? ` (${data.detail})` : ''}` : 'No se pudo conectar Stripe');
         return;
       }
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        setPaymentError(data?.message || 'No se pudo conectar Stripe');
+        toast.error(data?.message || 'No se pudo conectar Stripe');
       }
     } finally {
       setStripeLoading(false);
@@ -242,16 +240,15 @@ export default function MerchantDashboard() {
 
   const createPaymentLink = async () => {
     if (!merchantId) return;
-    setPaymentError(null);
     setStripeLoading(true);
     try {
       if (!canCharge) {
-        setPaymentError('Stripe no está listo para cobros.');
+        toast.error('Stripe no está listo para cobros.');
         return;
       }
       const amount = Number(payAmount);
       if (!amount || amount <= 0) {
-        setPaymentError('Monto inválido');
+        toast.error('Monto inválido');
         return;
       }
       const idempotencyKey = (globalThis.crypto && 'randomUUID' in globalThis.crypto)
@@ -272,7 +269,7 @@ export default function MerchantDashboard() {
       });
       const data = await resp.json();
       if (!resp.ok) {
-        setPaymentError(data?.message || 'No se pudo crear el cobro');
+        toast.error(data?.message || 'No se pudo crear el cobro');
         return;
       }
       setCheckoutUrl(data.checkout_url);
@@ -331,7 +328,6 @@ export default function MerchantDashboard() {
         <>
           <section className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-4">
             <h2 className="text-xl font-bold">Agregar / editar local</h2>
-            {errorMsg ? <p className="text-sm text-red-600">{errorMsg}</p> : null}
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">{t('merchant_business_name')}</label>
@@ -478,8 +474,6 @@ export default function MerchantDashboard() {
                 >
                   {stripeLoading ? 'Generando…' : 'Generar QR de pago'}
                 </button>
-
-                {paymentError ? <p className="text-sm text-red-600">{paymentError}</p> : null}
 
                 {feePreview ? (
                   <div className="text-sm text-gray-600">

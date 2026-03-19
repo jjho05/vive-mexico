@@ -3,30 +3,27 @@
 import React, { useRef, useState } from 'react';
 import { Camera, RefreshCw, Languages, Coins } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 export default function ScannerPage() {
   const { t } = useTranslation();
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
   const [showOriginal, setShowOriginal] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
   const handlePickPhoto = () => {
-    setError(null);
     cameraInputRef.current?.click();
   };
 
   const handlePickUpload = () => {
-    setError(null);
     uploadInputRef.current?.click();
   };
 
   const handleScan = async (file: File) => {
     setScanning(true);
     setResult(null);
-    setError(null);
     
     try {
       const formData = new FormData();
@@ -54,7 +51,7 @@ export default function ScannerPage() {
       setResult(data);
     } catch (error) {
       console.error("Scan error:", error);
-      setError("No se pudo procesar la imagen. Intenta de nuevo.");
+      toast.error("No se pudo procesar la imagen. Intenta de nuevo.");
     } finally {
       setScanning(false);
     }
@@ -186,11 +183,6 @@ export default function ScannerPage() {
         )}
       </div>
 
-      {error && (
-        <div className="p-4 bg-red-50 rounded-2xl border border-red-100 text-red-700 text-sm">
-          {error}
-        </div>
-      )}
       {result?.error && (
         <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 text-amber-700 text-sm">
           Error: {result.error}

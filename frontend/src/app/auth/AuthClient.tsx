@@ -4,6 +4,7 @@ import React from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { setSession } from '@/lib/auth';
+import { toast } from 'sonner';
 
 const BUILD_SHA = 'auth-v3';
 
@@ -17,7 +18,6 @@ export default function AuthClient() {
   const [name, setName] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const qRole = params.get('role');
@@ -31,7 +31,6 @@ export default function AuthClient() {
 
   const submit = async () => {
     setLoading(true);
-    setError(null);
     try {
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
       const payload: any = { email, password, role };
@@ -53,7 +52,7 @@ export default function AuthClient() {
       }
       if (!resp.ok) {
         const detail = data?.detail ? ` (${data.detail})` : raw ? ` (${raw})` : '';
-        setError(`${data?.message || t('auth_error')} [${resp.status}]${detail}`);
+        toast.error(`${data?.message || t('auth_error')} [${resp.status}]${detail}`);
         return;
       }
       const account = data?.account;
@@ -80,7 +79,7 @@ export default function AuthClient() {
         window.location.href = '/';
       }
     } catch (err: any) {
-      setError(`${t('auth_error')}${err?.message ? ` (${err.message})` : ''}`);
+      toast.error(`${t('auth_error')}${err?.message ? ` (${err.message})` : ''}`);
     } finally {
       setLoading(false);
     }
@@ -178,8 +177,6 @@ export default function AuthClient() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <button
           onClick={submit}
