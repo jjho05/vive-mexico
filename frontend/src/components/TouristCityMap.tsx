@@ -3,6 +3,9 @@
 import React from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 
 type POI = {
   id: number | null;
@@ -80,7 +83,10 @@ export default function TouristCityMap({ center, userLocation, pois, businesses,
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
     mapInstance.current = map;
-    markersLayer.current = L.layerGroup().addTo(map);
+    markersLayer.current = (L as any).markerClusterGroup({
+      chunkedLoading: true,
+      maxClusterRadius: 50,
+    }).addTo(map);
     routeLayer.current = L.layerGroup().addTo(map);
   }, []);
 
