@@ -384,6 +384,15 @@ export default function MerchantDashboard() {
                   </select>
                 </div>
               </div>
+              {!stripeStatus?.payouts_enabled && stripeStatus?.connected && (
+                <button
+                  onClick={connectStripe}
+                  disabled={stripeLoading}
+                  className={`w-full mt-4 ${stripeLoading ? 'opacity-50' : 'bg-amber-500 hover:bg-amber-600'} text-white font-bold py-3 rounded-xl transition-colors`}
+                >
+                  {stripeLoading ? 'Redirigiendo...' : 'Completar Datos Bancarios en Stripe'}
+                </button>
+              )}
               <div className="relative">
                 <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">{t('search_location')}</label>
                 <input
