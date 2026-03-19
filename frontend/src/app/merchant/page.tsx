@@ -384,15 +384,6 @@ export default function MerchantDashboard() {
                   </select>
                 </div>
               </div>
-              {!stripeStatus?.payouts_enabled && stripeStatus?.connected && (
-                <button
-                  onClick={connectStripe}
-                  disabled={stripeLoading}
-                  className={`w-full mt-4 ${stripeLoading ? 'opacity-50' : 'bg-amber-500 hover:bg-amber-600'} text-white font-bold py-3 rounded-xl transition-colors`}
-                >
-                  {stripeLoading ? 'Redirigiendo...' : 'Completar Datos Bancarios en Stripe'}
-                </button>
-              )}
               <div className="relative">
                 <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">{t('search_location')}</label>
                 <input
@@ -473,6 +464,16 @@ export default function MerchantDashboard() {
                 <span className={`px-2 py-0.5 rounded-full ${stripeStatus?.payouts_enabled ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                   Depósitos: {stripeStatus?.payouts_enabled ? 'OK' : 'Pendiente'}
                 </span>
+                
+                {stripeStatus?.connected && !stripeStatus?.payouts_enabled && (
+                  <button
+                    onClick={connectStripe}
+                    disabled={stripeLoading}
+                    className={`ml-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-colors shadow-sm active:scale-95`}
+                  >
+                    {stripeLoading ? 'Cargando...' : 'Completar Alta de Banco ↗'}
+                  </button>
+                )}
               </div>
             ) : (
               <button
