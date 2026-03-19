@@ -35,7 +35,7 @@ export default function ScannerPage() {
       let targetLang = "en";
       let targetCurrency = "USD";
       try {
-        const settingsRaw = localStorage.getItem('ola-mexico-settings');
+        const settingsRaw = localStorage.getItem('vive-mexico-settings');
         if (settingsRaw) {
           const settings = JSON.parse(settingsRaw);
           if (settings.translateLang) targetLang = settings.translateLang;

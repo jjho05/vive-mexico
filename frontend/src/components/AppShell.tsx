@@ -5,12 +5,14 @@ import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import BottomNav from '@/components/BottomNav';
 import { getSession } from '@/lib/auth';
+import { migrateLocalStorageKeys } from '@/lib/storage';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [hasSession, setHasSession] = React.useState(false);
 
   React.useEffect(() => {
+    migrateLocalStorageKeys();
     const session = getSession();
     setHasSession(!!session);
   }, []);

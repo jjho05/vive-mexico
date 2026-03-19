@@ -576,7 +576,7 @@ i18n
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
-      lookupLocalStorage: 'ola-mexico-lang',
+      lookupLocalStorage: 'vive-mexico-lang',
     },
     interpolation: {
       escapeValue: false

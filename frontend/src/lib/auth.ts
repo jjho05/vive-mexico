@@ -10,7 +10,7 @@ export type SessionData = {
   tourist_id?: number | null;
 };
 
-const STORAGE_KEY = 'ola-session';
+const STORAGE_KEY = 'vive-mexico-session';
 
 export const getSession = (): SessionData | null => {
   try {

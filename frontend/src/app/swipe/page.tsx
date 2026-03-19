@@ -38,10 +38,10 @@ export default function SwipePage() {
     const current = MOCK_DATA[index];
     if (direction === 'right' && current?.category) {
       try {
-        const raw = localStorage.getItem('ola-swipe-categories');
+        const raw = localStorage.getItem('vive-mexico-swipe-categories');
         const data = raw ? JSON.parse(raw) : {};
         data[current.category] = (data[current.category] || 0) + 1;
-        localStorage.setItem('ola-swipe-categories', JSON.stringify(data));
+        localStorage.setItem('vive-mexico-swipe-categories', JSON.stringify(data));
       } catch {}
     }
     console.log(`Swiped ${direction} on ${MOCK_DATA[index].name}`);

@@ -24,7 +24,7 @@ export default function AuthClient() {
     if (qRole === 'merchant' || qRole === 'tourist') {
       setRole(qRole);
     } else {
-      const stored = localStorage.getItem('ola-mexico-role');
+      const stored = localStorage.getItem('vive-mexico-role');
       if (stored === 'merchant' || stored === 'tourist') setRole(stored);
     }
   }, [params]);
@@ -65,12 +65,12 @@ export default function AuthClient() {
           merchant_id: account.merchant_id || null,
           tourist_id: account.tourist_id ?? null,
         });
-        localStorage.setItem('ola-mexico-role', account.role);
+        localStorage.setItem('vive-mexico-role', account.role);
         if (account.merchant_id) {
-          localStorage.setItem('ola-merchant-id', account.merchant_id);
+          localStorage.setItem('vive-mexico-merchant-id', account.merchant_id);
         }
         if (account.tourist_id) {
-          localStorage.setItem('ola-tourist-id', String(account.tourist_id));
+          localStorage.setItem('vive-mexico-tourist-id', String(account.tourist_id));
         }
       }
       if (role === 'merchant') {

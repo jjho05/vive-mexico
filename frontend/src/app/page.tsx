@@ -25,7 +25,7 @@ export default function Home() {
 
   React.useEffect(() => {
     try {
-      const savedRole = localStorage.getItem('ola-mexico-role');
+      const savedRole = localStorage.getItem('vive-mexico-role');
       const session = getSession();
       if (session?.role === 'merchant') {
         window.location.href = '/merchant';
@@ -54,7 +54,7 @@ export default function Home() {
 
   React.useEffect(() => {
     try {
-      const raw = localStorage.getItem('ola-swipe-categories');
+      const raw = localStorage.getItem('vive-mexico-swipe-categories');
       if (raw) {
         const data = JSON.parse(raw);
         const top = Object.entries(data)
@@ -145,7 +145,7 @@ export default function Home() {
   React.useEffect(() => {
     if (role !== 'tourist') return;
     const session = getSession();
-    const touristId = session?.tourist_id || localStorage.getItem('ola-tourist-id');
+    const touristId = session?.tourist_id || localStorage.getItem('vive-mexico-tourist-id');
     if (!touristId) return;
     fetch(`/api/tourists/${touristId}`)
       .then((r) => r.json())
@@ -220,7 +220,7 @@ export default function Home() {
           
           <div className="relative z-10 pt-4">
             <h2 className="text-4xl font-black italic tracking-tighter">
-              OLA <span className="text-[var(--primary)]">MÉXICO</span>
+              VIVE <span className="text-[var(--primary)]">MÉXICO</span>
             </h2>
             <p className="text-[var(--secondary)] font-black mt-1 text-xs uppercase tracking-widest">World Cup 2026</p>
             <p className="text-gray-600 font-medium mt-8 text-lg">¿Cómo deseas usar la app hoy?</p>
@@ -230,9 +230,9 @@ export default function Home() {
             <button 
               onClick={() => {
                 try {
-                  localStorage.setItem('ola-mexico-role', 'tourist');
+                  localStorage.setItem('vive-mexico-role', 'tourist');
                   const deviceLang = navigator.language?.split('-')[0] || 'en';
-                  localStorage.setItem('ola-mexico-lang', deviceLang);
+                  localStorage.setItem('vive-mexico-lang', deviceLang);
                 } catch {}
                 window.location.href = '/auth?role=tourist';
               }}
@@ -243,8 +243,8 @@ export default function Home() {
             <button 
               onClick={() => {
                 try {
-                  localStorage.setItem('ola-mexico-role', 'merchant');
-                  localStorage.setItem('ola-mexico-lang', 'es');
+                  localStorage.setItem('vive-mexico-role', 'merchant');
+                  localStorage.setItem('vive-mexico-lang', 'es');
                 } catch {}
                 window.location.href = '/auth?role=merchant';
               }}

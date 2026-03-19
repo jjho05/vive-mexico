@@ -50,10 +50,10 @@ export default function MerchantDashboard() {
       window.location.href = '/auth?role=merchant';
       return;
     }
-    const stored = session.merchant_id || localStorage.getItem('ola-merchant-id');
+    const stored = session.merchant_id || localStorage.getItem('vive-mexico-merchant-id');
     if (stored) {
       setMerchantId(stored);
-      localStorage.setItem('ola-merchant-id', stored);
+      localStorage.setItem('vive-mexico-merchant-id', stored);
       fetchBusinesses(stored);
       fetchMerchant(stored);
       fetchStripeStatus(stored);
@@ -62,7 +62,7 @@ export default function MerchantDashboard() {
 
   React.useEffect(() => {
     if (merchantId) {
-      localStorage.setItem('ola-mexico-role', 'merchant');
+      localStorage.setItem('vive-mexico-role', 'merchant');
     }
   }, [merchantId]);
 
@@ -135,7 +135,7 @@ export default function MerchantDashboard() {
       const data = await resp.json();
       const id = data?.data?.[0]?.id || data?.merchant?.id;
       if (id) {
-        localStorage.setItem('ola-merchant-id', id);
+        localStorage.setItem('vive-mexico-merchant-id', id);
         setMerchantId(id);
         fetchBusinesses(id);
       }

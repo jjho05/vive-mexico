@@ -17,7 +17,7 @@ const DEFAULT_SETTINGS: Settings = {
 export function loadSettings(): Settings {
   if (typeof window === 'undefined') return DEFAULT_SETTINGS;
   try {
-    const raw = localStorage.getItem('ola-mexico-settings');
+    const raw = localStorage.getItem('vive-mexico-settings');
     if (!raw) return DEFAULT_SETTINGS;
     return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
   } catch {
@@ -27,6 +27,6 @@ export function loadSettings(): Settings {
 
 export function saveSettings(settings: Settings) {
   try {
-    localStorage.setItem('ola-mexico-settings', JSON.stringify(settings));
+    localStorage.setItem('vive-mexico-settings', JSON.stringify(settings));
   } catch {}
 }

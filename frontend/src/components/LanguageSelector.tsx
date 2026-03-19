@@ -50,7 +50,7 @@ export function LanguageSelector() {
   const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('ola-mexico-lang') : null;
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('vive-mexico-lang') : null;
     if (saved && saved !== i18n.language) {
       i18n.changeLanguage(saved);
       setReady(true);
@@ -77,7 +77,7 @@ export function LanguageSelector() {
           const lang = e.target.value;
         i18n.changeLanguage(lang);
         try {
-          localStorage.setItem('ola-mexico-lang', lang);
+          localStorage.setItem('vive-mexico-lang', lang);
         } catch {}
       }}
       >

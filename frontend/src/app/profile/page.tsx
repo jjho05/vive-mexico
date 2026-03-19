@@ -45,7 +45,7 @@ export default function ProfilePage() {
     setAdvancedEnabled(settings.advancedEnabled);
     setTranslateLang(settings.translateLang || 'en');
     setCountry(settings.country || 'MX');
-    const storedTourist = localStorage.getItem('ola-tourist-id');
+    const storedTourist = localStorage.getItem('vive-mexico-tourist-id');
     if (storedTourist) {
       setTouristId(Number(storedTourist));
     }
@@ -55,7 +55,7 @@ export default function ProfilePage() {
     }
 
     if (session.role === 'merchant') {
-      const merchantId = session.merchant_id || localStorage.getItem('ola-merchant-id');
+      const merchantId = session.merchant_id || localStorage.getItem('vive-mexico-merchant-id');
       if (merchantId) {
         fetch(`/api/merchants/${merchantId}`)
           .then((r) => r.json())
@@ -97,7 +97,7 @@ export default function ProfilePage() {
 
   React.useEffect(() => {
     saveSettings({
-      language: localStorage.getItem('ola-mexico-lang') || 'es',
+      language: localStorage.getItem('vive-mexico-lang') || 'es',
       currency,
       advancedEnabled,
       translateLang,
@@ -127,7 +127,7 @@ export default function ProfilePage() {
       const id = data?.data?.[0]?.id;
       if (id) {
         setTouristId(id);
-        localStorage.setItem('ola-tourist-id', String(id));
+        localStorage.setItem('vive-mexico-tourist-id', String(id));
       }
       setLocationStatus("Guardado");
     } catch {
@@ -140,7 +140,7 @@ export default function ProfilePage() {
     try {
       const response = await fetch(`/api/tourists/${touristId}`, { method: "DELETE" });
       if (!response.ok) throw new Error("error");
-      localStorage.removeItem('ola-tourist-id');
+      localStorage.removeItem('vive-mexico-tourist-id');
       setTouristId(null);
       setLocationStatus("Eliminado");
     } catch {
@@ -150,9 +150,9 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     try {
-      localStorage.removeItem('ola-mexico-role');
-      localStorage.removeItem('ola-merchant-id');
-      localStorage.removeItem('ola-tourist-id');
+      localStorage.removeItem('vive-mexico-role');
+      localStorage.removeItem('vive-mexico-merchant-id');
+      localStorage.removeItem('vive-mexico-tourist-id');
       clearSession();
     } catch (e) {}
     window.location.href = '/';
