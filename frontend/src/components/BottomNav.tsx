@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, ScanLine, User } from 'lucide-react';
+import { Home, ScanLine, User, Heart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import React from 'react';
@@ -16,6 +16,10 @@ const BottomNav = () => {
       <Link href="/" className={`flex flex-col items-center gap-1 ${isActive('/') ? 'text-green-600' : 'text-gray-400'}`}>
         <Home size={24} />
         <span className="text-xs font-medium">{t('home')}</span>
+      </Link>
+      <Link href="/favorites" className={`flex flex-col items-center gap-1 ${isActive('/favorites') ? 'text-green-600' : 'text-gray-400'}`}>
+        <Heart size={24} />
+        <span className="text-xs font-medium">Favoritos</span>
       </Link>
       <Link href="/scanner" className={`flex flex-col items-center gap-1 ${isActive('/scanner') ? 'text-green-600' : 'text-gray-400'}`}>
         <ScanLine size={24} />

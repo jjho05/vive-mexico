@@ -50,6 +50,13 @@ export default function SwipePage() {
         data[current.category] = (data[current.category] || 0) + 1;
         // Optionally store tags as well or just category
         localStorage.setItem('vive-mexico-swipe-categories', JSON.stringify(data));
+
+        const rawFavs = localStorage.getItem('vive-mexico-favorites');
+        const favs = rawFavs ? JSON.parse(rawFavs) : [];
+        if (!favs.some((f: any) => f.id === current.id)) {
+          favs.push(current);
+          localStorage.setItem('vive-mexico-favorites', JSON.stringify(favs));
+        }
       } catch {}
     }
     setIndex((prev) => prev + 1);
