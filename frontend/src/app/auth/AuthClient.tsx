@@ -64,6 +64,7 @@ export default function AuthClient() {
           email: account.email,
           merchant_id: account.merchant_id || null,
           tourist_id: account.tourist_id ?? null,
+          token: data?.token || null,
         });
         localStorage.setItem('vive-mexico-role', account.role);
         if (account.merchant_id) {
@@ -92,7 +93,7 @@ export default function AuthClient() {
           Actualizado {BUILD_SHA}
         </div>
         <h1 className="text-3xl font-black italic tracking-tighter mt-3">
-          OLA <span className="text-[var(--primary)]">MÉXICO</span>
+          VIVE <span className="text-[var(--primary)]">MÉXICO</span>
         </h1>
         <p className="text-[var(--muted)] font-medium mt-2">{t('auth_title')}</p>
       </header>

@@ -7,6 +7,11 @@ import uuid
 import uvicorn
 import os
 import bcrypt
+import base64
+import hashlib
+import hmac
+import json
+import time
 from backend.api.routes import vision_router
 from backend.services.currency_service import currency_service
 from backend.database.supabase_client import supabase
@@ -35,6 +40,50 @@ app.add_middleware(
 
 # Static export path for Next.js build output (Dockerfile copies it to /app/static)
 static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+
+AUTH_SECRET = os.getenv("AUTH_SECRET", "dev-secret-change-me")
+TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7
+
+def _b64url_encode(raw: bytes) -> str:
+    return base64.urlsafe_b64encode(raw).decode("utf-8").rstrip("=")
+
+def _b64url_decode(raw: str) -> bytes:
+    padding = "=" * (-len(raw) % 4)
+    return base64.urlsafe_b64decode(raw + padding)
+
+def create_token(payload: dict) -> str:
+    data = payload.copy()
+    data["exp"] = int(time.time()) + TOKEN_TTL_SECONDS
+    body = _b64url_encode(json.dumps(data, separators=(",", ":"), sort_keys=True).encode("utf-8"))
+    sig = hmac.new(AUTH_SECRET.encode("utf-8"), body.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"{body}.{sig}"
+
+def verify_token(token: str) -> Optional[dict]:
+    try:
+        body, sig = token.split(".", 1)
+        expected = hmac.new(AUTH_SECRET.encode("utf-8"), body.encode("utf-8"), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected, sig):
+            return None
+        payload = json.loads(_b64url_decode(body).decode("utf-8"))
+        exp = payload.get("exp")
+        if exp and int(exp) < int(time.time()):
+            return None
+        return payload
+    except Exception:
+        return None
+
+def get_auth_payload(request: Request) -> Optional[dict]:
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth.replace("Bearer ", "", 1).strip()
+    return verify_token(token)
+
+def require_role(request: Request, role: str) -> Optional[dict]:
+    payload = get_auth_payload(request)
+    if not payload or payload.get("role") != role:
+        return None
+    return payload
 
 # Mock database - will move to PostgreSQL later
 MOCK_BUSINESSES = [
@@ -151,7 +200,15 @@ async def register_account(payload: AuthRegister):
         account_error = get_response_error(res)
         if account_error:
             return JSONResponse({"message": "No se pudo crear cuenta", "detail": account_error}, status_code=500)
-        return {"message": "Cuenta creada", "account": res.data[0] if res.data else account_data}
+        account = res.data[0] if res.data else account_data
+        token = create_token({
+            "id": account.get("id"),
+            "role": account.get("role"),
+            "email": account.get("email"),
+            "merchant_id": account.get("merchant_id"),
+            "tourist_id": account.get("tourist_id"),
+        })
+        return {"message": "Cuenta creada", "account": account, "token": token}
     except Exception as e:
         print(f"Register Account Error: {e}")
         return JSONResponse({"message": "No se pudo registrar", "detail": str(e)}, status_code=500)
@@ -170,7 +227,14 @@ async def login_account(payload: AuthLogin):
         account = res.data[0]
         if not verify_password(payload.password, account.get("password_hash", "")):
             return JSONResponse({"message": "Credenciales inválidas"}, status_code=401)
-        return {"message": "OK", "account": account}
+        token = create_token({
+            "id": account.get("id"),
+            "role": account.get("role"),
+            "email": account.get("email"),
+            "merchant_id": account.get("merchant_id"),
+            "tourist_id": account.get("tourist_id"),
+        })
+        return {"message": "OK", "account": account, "token": token}
     except Exception as e:
         print(f"Login Error: {e}")
         return JSONResponse({"message": "No se pudo iniciar sesión"}, status_code=500)
@@ -212,10 +276,14 @@ async def update_merchant_location(merchant_id: int, address: str):
     return {"message": "No se pudo actualizar"}
 
 @app.post("/api/merchants")
-async def create_merchant(merchant: Merchant):
+async def create_merchant(request: Request, merchant: Merchant):
     try:
+        auth = require_role(request, "merchant")
+        if not auth:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         data = merchant.dict()
-        data["id"] = data.get("id") or str(uuid.uuid4())
+        data["id"] = auth.get("merchant_id") or data.get("id") or str(uuid.uuid4())
+        data["email"] = data.get("email") or auth.get("email")
         if supabase is not None:
             res = supabase.table("merchants").insert(data).execute()
             return {"message": "Comerciante creado", "data": res.data}
@@ -224,8 +292,11 @@ async def create_merchant(merchant: Merchant):
     return {"message": "Supabase no configurado", "merchant": merchant}
 
 @app.get("/api/merchants/{merchant_id}")
-async def get_merchant(merchant_id: str):
+async def get_merchant(request: Request, merchant_id: str):
     try:
+        auth = require_role(request, "merchant")
+        if not auth or auth.get("merchant_id") != merchant_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         if supabase is not None:
             res = supabase.table("merchants").select("*").eq("id", merchant_id).execute()
             return res.data[0] if res.data else None
@@ -234,8 +305,11 @@ async def get_merchant(merchant_id: str):
     return None
 
 @app.put("/api/merchants/{merchant_id}")
-async def update_merchant(merchant_id: str, merchant: Merchant):
+async def update_merchant(request: Request, merchant_id: str, merchant: Merchant):
     try:
+        auth = require_role(request, "merchant")
+        if not auth or auth.get("merchant_id") != merchant_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         data = merchant.dict()
         data.pop("id", None)
         if supabase is not None:
@@ -246,8 +320,11 @@ async def update_merchant(merchant_id: str, merchant: Merchant):
     return {"message": "No se pudo actualizar"}
 
 @app.get("/api/merchants/{merchant_id}/businesses")
-async def get_merchant_businesses(merchant_id: str):
+async def get_merchant_businesses(request: Request, merchant_id: str):
     try:
+        auth = require_role(request, "merchant")
+        if not auth or auth.get("merchant_id") != merchant_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         if supabase is not None:
             res = supabase.table("businesses").select("*").eq("merchant_id", merchant_id).execute()
             res_error = get_response_error(res)
@@ -259,8 +336,11 @@ async def get_merchant_businesses(merchant_id: str):
     return []
 
 @app.post("/api/merchants/{merchant_id}/businesses")
-async def create_merchant_business(merchant_id: str, business: Business):
+async def create_merchant_business(request: Request, merchant_id: str, business: Business):
     try:
+        auth = require_role(request, "merchant")
+        if not auth or auth.get("merchant_id") != merchant_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         data = business.dict()
         if data.get("id") is None:
             data.pop("id", None)
@@ -281,8 +361,11 @@ async def create_merchant_business(merchant_id: str, business: Business):
     return JSONResponse({"message": "No se pudo crear", "detail": "unknown"}, status_code=500)
 
 @app.put("/api/merchants/{merchant_id}/businesses/{business_id}")
-async def update_merchant_business(merchant_id: str, business_id: int, business: Business):
+async def update_merchant_business(request: Request, merchant_id: str, business_id: int, business: Business):
     try:
+        auth = require_role(request, "merchant")
+        if not auth or auth.get("merchant_id") != merchant_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         data = business.dict()
         data["merchant_id"] = merchant_id
         data.pop("id", None)
@@ -306,9 +389,15 @@ async def get_recommendations(interests: Optional[str] = None):
     return MOCK_BUSINESSES
 
 @app.post("/api/tourists/register")
-async def register_tourist(tourist: Tourist):
+async def register_tourist(request: Request, tourist: Tourist):
     try:
+        auth = require_role(request, "tourist")
+        if not auth:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         data = tourist.dict()
+        if auth.get("tourist_id"):
+            res = supabase.table("tourists").update(data).eq("id", auth.get("tourist_id")).execute()
+            return {"message": "Turista actualizado", "data": res.data}
         if supabase is not None:
             res = supabase.table("tourists").insert(data).execute()
             return {"message": "Turista registrado", "data": res.data}
@@ -317,8 +406,11 @@ async def register_tourist(tourist: Tourist):
     return {"message": "Supabase no configurado", "tourist": tourist}
 
 @app.get("/api/tourists/{tourist_id}")
-async def get_tourist(tourist_id: int):
+async def get_tourist(request: Request, tourist_id: int):
     try:
+        auth = require_role(request, "tourist")
+        if not auth or auth.get("tourist_id") != tourist_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         if supabase is not None:
             res = supabase.table("tourists").select("*").eq("id", tourist_id).execute()
             return res.data[0] if res.data else None
@@ -327,8 +419,11 @@ async def get_tourist(tourist_id: int):
     return None
 
 @app.put("/api/tourists/{tourist_id}")
-async def update_tourist(tourist_id: int, tourist: Tourist):
+async def update_tourist(request: Request, tourist_id: int, tourist: Tourist):
     try:
+        auth = require_role(request, "tourist")
+        if not auth or auth.get("tourist_id") != tourist_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         data = tourist.dict()
         data.pop("id", None)
         if supabase is not None:
@@ -339,8 +434,11 @@ async def update_tourist(tourist_id: int, tourist: Tourist):
     return {"message": "No se pudo actualizar"}
 
 @app.delete("/api/tourists/{tourist_id}")
-async def delete_tourist(tourist_id: int):
+async def delete_tourist(request: Request, tourist_id: int):
     try:
+        auth = require_role(request, "tourist")
+        if not auth or auth.get("tourist_id") != tourist_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         if supabase is not None:
             res = supabase.table("tourists").delete().eq("id", tourist_id).execute()
             return {"message": "Turista eliminado", "data": res.data}
@@ -403,9 +501,12 @@ async def stripe_connect_create(request: Request):
     if supabase is None:
         return JSONResponse({"message": "Supabase no configurado"}, status_code=500)
     try:
+        auth = require_role(request, "merchant")
+        if not auth:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         payload = await request.json()
         merchant_id = payload.get("merchant_id")
-        if not merchant_id:
+        if not merchant_id or auth.get("merchant_id") != merchant_id:
             return JSONResponse({"message": "merchant_id requerido"}, status_code=400)
         res = supabase.table("merchants").select("*").eq("id", merchant_id).execute()
         if not res.data:
@@ -429,10 +530,13 @@ async def stripe_connect_create(request: Request):
 
 
 @app.get("/api/stripe/connect/status")
-async def stripe_connect_status(merchant_id: str):
+async def stripe_connect_status(request: Request, merchant_id: str):
     if supabase is None:
         return JSONResponse({"message": "Supabase no configurado"}, status_code=500)
     try:
+        auth = require_role(request, "merchant")
+        if not auth or auth.get("merchant_id") != merchant_id:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         res = supabase.table("merchants").select("*").eq("id", merchant_id).execute()
         if not res.data:
             return JSONResponse({"message": "Comerciante no encontrado"}, status_code=404)
@@ -456,6 +560,9 @@ async def create_payment_checkout(request: Request):
     if supabase is None:
         return JSONResponse({"message": "Supabase no configurado"}, status_code=500)
     try:
+        auth = require_role(request, "merchant")
+        if not auth:
+            return JSONResponse({"message": "No autorizado"}, status_code=401)
         payload = await request.json()
         merchant_id = payload.get("merchant_id")
         amount_mxn = float(payload.get("amount_mxn", 0))
@@ -463,7 +570,7 @@ async def create_payment_checkout(request: Request):
         idempotency_key = payload.get("idempotency_key")
         success_url = payload.get("success_url")
         cancel_url = payload.get("cancel_url")
-        if not merchant_id or amount_mxn <= 0:
+        if not merchant_id or auth.get("merchant_id") != merchant_id or amount_mxn <= 0:
             return JSONResponse({"message": "Datos inválidos"}, status_code=400)
         res = supabase.table("merchants").select("*").eq("id", merchant_id).execute()
         if not res.data:

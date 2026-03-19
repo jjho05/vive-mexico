@@ -8,6 +8,7 @@ export type SessionData = {
   email: string;
   merchant_id?: string | null;
   tourist_id?: number | null;
+  token?: string | null;
 };
 
 const STORAGE_KEY = 'vive-mexico-session';
@@ -32,4 +33,10 @@ export const clearSession = () => {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {}
+};
+
+export const getAuthHeaders = () => {
+  const session = getSession();
+  if (!session?.token) return {};
+  return { Authorization: `Bearer ${session.token}` };
 };

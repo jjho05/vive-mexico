@@ -5,7 +5,7 @@ import { User, Settings, Globe, CreditCard, LogOut, Languages, Store } from 'luc
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { loadSettings, saveSettings } from '@/lib/settings';
 import { useTranslation } from 'react-i18next';
-import { clearSession, getSession } from '@/lib/auth';
+import { clearSession, getAuthHeaders, getSession } from '@/lib/auth';
 
 export default function ProfilePage() {
   const [currency, setCurrency] = React.useState('USD');
@@ -57,7 +57,9 @@ export default function ProfilePage() {
     if (session.role === 'merchant') {
       const merchantId = session.merchant_id || localStorage.getItem('vive-mexico-merchant-id');
       if (merchantId) {
-        fetch(`/api/merchants/${merchantId}`)
+        fetch(`/api/merchants/${merchantId}`, {
+          headers: { ...getAuthHeaders() },
+        })
           .then((r) => r.json())
           .then((data) => {
             if (data?.name) setMerchantName(data.name);
@@ -67,7 +69,9 @@ export default function ProfilePage() {
     }
 
     if (session.role === 'tourist' && session.tourist_id) {
-      fetch(`/api/tourists/${session.tourist_id}`)
+      fetch(`/api/tourists/${session.tourist_id}`, {
+        headers: { ...getAuthHeaders() },
+      })
         .then((r) => r.json())
         .then((data) => {
           if (data?.name) setTouristDisplayName(data.name);
@@ -119,7 +123,7 @@ export default function ProfilePage() {
       const method = touristId ? "PUT" : "POST";
       const response = await fetch(endpoint, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error("error");
@@ -138,7 +142,10 @@ export default function ProfilePage() {
   const deleteTourist = async () => {
     if (!touristId) return;
     try {
-      const response = await fetch(`/api/tourists/${touristId}`, { method: "DELETE" });
+      const response = await fetch(`/api/tourists/${touristId}`, {
+        method: "DELETE",
+        headers: { ...getAuthHeaders() },
+      });
       if (!response.ok) throw new Error("error");
       localStorage.removeItem('vive-mexico-tourist-id');
       setTouristId(null);

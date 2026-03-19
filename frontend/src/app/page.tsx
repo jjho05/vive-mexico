@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Star, Map } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { getAuthHeaders, getSession } from '@/lib/auth';
 import dynamic from 'next/dynamic';
 
 const TouristCityMap = dynamic(() => import('@/components/TouristCityMap'), { ssr: false });
@@ -147,7 +147,9 @@ export default function Home() {
     const session = getSession();
     const touristId = session?.tourist_id || localStorage.getItem('vive-mexico-tourist-id');
     if (!touristId) return;
-    fetch(`/api/tourists/${touristId}`)
+    fetch(`/api/tourists/${touristId}`, {
+      headers: { ...getAuthHeaders() },
+    })
       .then((r) => r.json())
       .then((data) => {
         if (data?.lat && data?.lng) {
