@@ -10,24 +10,51 @@ pinned: false
 
 # Vive México — World Cup 2026 Edition
 
-Super app para **nivelar la cancha digital** entre turistas del Mundial 2026 y micro‑negocios locales.  
-El objetivo es crear **descubrimiento auténtico**, **menús universales**, **pagos internacionales con QR**, y **datos útiles** para decisiones locales.
+**Vive México** es una super‑app para **nivelar la cancha digital** entre turistas del Mundial 2026 y micro‑negocios locales, con **descubrimiento auténtico**, **menús universales con IA**, **pagos internacionales con QR**, y **datos útiles** para decisiones locales.
 
 ---
 
-## Ideas base (resumen)
+## Problema y solución (resumen)
 
-**Idea 1 · LocalScore / Ruta Auténtica (Filtrado Colaborativo Turístico)**  
-Los turistas hacen swipes (tipo Tinder). A partir de sus intereses, la app crea una **ruta auténtica** con negocios 100% locales y evita trampas turísticas.
+**Problema (1 frase):** Los micro‑negocios turísticos locales pierden ventas porque los turistas no los encuentran, no entienden menús y no pueden pagar fácil con métodos internacionales.
 
-**Idea 2 · Menú Universal AI**  
-Un comerciante toma foto de menú → OCR → traducción multi‑idioma → estructura de precios → QR del menú digital.
+**Solución:** Vive México unifica **descubrimiento**, **menú entendible** y **pago internacional** en una sola experiencia.
 
-**Idea 4 · Mundialista Smart‑Wallet (Pagos QR)**  
-Pagos digitales con QR. El turista paga con Apple/Google Pay/tarjeta; el local recibe en MXN.
+---
 
-**Idea 5 · OlaData Hub (Panel B2B)**  
-Insights de turismo y demanda para asociaciones/municipios: zonas, categorías top, picos de interés, etc.
+## Evidencia y KPIs
+
+**Datos públicos (base):**
+- 2024: **45 millones de turistas internacionales** en México.
+- 2024: **USD 32,956.3 millones** en divisas por visitantes internacionales.
+
+**KPIs propuestos:**
+1) # turistas activos mensuales.  
+2) # escaneos de menú por negocio.  
+3) % de pagos completados vs iniciados.  
+4) Ingreso adicional estimado a micro‑negocios.  
+5) Tiempo promedio para encontrar un local auténtico.
+
+**Referencia:**  
+SECTUR (11‑Feb‑2025) — https://www.gob.mx/sectur/articulos/el-turismo-mexicano-rebasa-expectativas-con-el-ingreso-de-mas-de-32-mmdd-en-divisas-por-visitantes-internacionales-en-2024-7-4-mas-que-2023
+
+---
+
+## Arquitectura (alto nivel)
+
+```
+Turista/Comerciante
+        |
+   Web App (Next.js)
+        |
+   API (FastAPI)
+  /   |      \
+DB  OCR     Pagos
+ |   |        |
+Supabase   Stripe
+ |   |
+POIs (Wiki/OSM)
+```
 
 ---
 
@@ -49,16 +76,22 @@ Insights de turismo y demanda para asociaciones/municipios: zonas, categorías t
 
 ---
 
-## Arquitectura (alto nivel)
+## Roadmap / Mejoras
 
-**Frontend (Next.js + React 19)**
-- UI móvil primero con rutas `/`, `/scanner`, `/swipe`, `/profile`, `/merchant`.
-- i18n multi‑idioma.
-- Mapa interactivo con Leaflet + OpenStreetMap.
+**Corto plazo (hackathon)**  
+- Estabilidad y UX crítica (auth, mapa, OCR).  
+- Flujo de pago QR completo.  
+- Onboarding simple para comerciante.
 
-**Backend (FastAPI)**
-- APIs para negocios, turistas, OCR, POIs, pagos, moneda.
-- Integración Supabase (DB).
+**Medio plazo**  
+- Panel B2B (OlaData Hub) con métricas agregadas.  
+- Recomendaciones mejoradas (LocalScore 2.0).  
+- Antifraude básico en pagos.
+
+**Largo plazo**  
+- Integraciones con gobiernos/municipios.  
+- Observabilidad y escalabilidad a nivel nacional.  
+- Programas de fidelidad y alianzas.
 
 ---
 
